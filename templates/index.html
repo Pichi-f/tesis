@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Cifra Negra - Visualización Geoespacial
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+        }
+
+        .contenedor {
+            display: flex;
+            height: 100vh;
+        }
+
+        .panel {
+            width: 280px;
+            background-color: white;
+            padding: 24px;
+            border-right: 1px solid #dddddd;
+            overflow-y: auto;
+        }
+
+        .titulo {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        .subtitulo {
+            margin-top: 0;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .seccion {
+            margin-top: 28px;
+        }
+
+        .seccion h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .opcion {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .campo-fecha {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+        }
+
+        .boton {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #168aad;
+            color: white;
+            font-weight: bold;
+        }
+
+        .boton:hover {
+            background-color: #126d89;
+        }
+
+        .estadistica {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        .estadistica-numero {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .estadistica-texto {
+            color: #666666;
+            font-size: 13px;
+        }
+
+        .mapa {
+            flex: 1;
+            height: 100vh;
+        }
+
+        .mapa iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="contenedor">
+
+    <aside class="panel">
+
+        <h1 class="titulo">
+            Cifra Negra
+        </h1>
+
+        <p class="subtitulo">
+            Visor de incidentes
+        </p>
+
+
+        <form id="formulario-filtros">
+
+            <div class="seccion">
+
+                <h3>
+                    Categorías
+                </h3>
+
+                <label class="opcion">
+                    <input
+                        type="checkbox"
+                        name="categoria"
+                        value="robo"
+                        checked
+                    >
+                    Robo
+                </label>
+
+                <label class="opcion">
+                    <input
+                        type="checkbox"
+                        name="categoria"
+                        value="extorsion"
+                        checked
+                    >
+                    Extorsión
+                </label>
+
+                <label class="opcion">
+                    <input
+                        type="checkbox"
+                        name="categoria"
+                        value="agresion"
+                        checked
+                    >
+                    Agresión
+                </label>
+
+                <label class="opcion">
+                    <input
+                        type="checkbox"
+                        name="categoria"
+                        value="otro"
+                        checked
+                    >
+                    Otro
+                </label>
+
+            </div>
+
+
+            <div class="seccion">
+
+                <h3>
+                    Rango de fechas
+                </h3>
+
+                <label>
+                    Desde
+                </label>
+
+                <input
+                    class="campo-fecha"
+                    type="date"
+                    id="fecha-desde"
+                >
+
+                <label>
+                    Hasta
+                </label>
+
+                <input
+                    class="campo-fecha"
+                    type="date"
+                    id="fecha-hasta"
+                >
+
+                <button
+                    class="boton"
+                    type="submit"
+                >
+                    Aplicar filtros
+                </button>
+
+            </div>
+
+        </form>
+
+
+        <div class="estadistica">
+
+            <div class="estadistica-numero">
+                {{ total_indicios }}
+            </div>
+
+            <div class="estadistica-texto">
+                Indicios procesados
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <main class="mapa">
+
+        <iframe
+            id="mapa"
+            src="/mapa"
+        ></iframe>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    const formulario = document.getElementById(
+        "formulario-filtros"
+    );
+
+    const mapa = document.getElementById(
+        "mapa"
+    );
+
+
+    formulario.addEventListener(
+        "submit",
+        function(evento) {
+
+            evento.preventDefault();
+
+            const parametros = new URLSearchParams();
+
+            const categorias =
+                document.querySelectorAll(
+                    'input[name="categoria"]:checked'
+                );
+
+            categorias.forEach(
+                function(categoria) {
+
+                    parametros.append(
+                        "categoria",
+                        categoria.value
+                    );
+
+                }
+            );
+
+
+            const desde =
+                document.getElementById(
+                    "fecha-desde"
+                ).value;
+
+            const hasta =
+                document.getElementById(
+                    "fecha-hasta"
+                ).value;
+
+
+            if (desde) {
+
+                parametros.append(
+                    "desde",
+                    desde
+                );
+
+            }
+
+
+            if (hasta) {
+
+                parametros.append(
+                    "hasta",
+                    hasta
+                );
+
+            }
+
+
+            mapa.src =
+                "/mapa?"
+                + parametros.toString();
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>
