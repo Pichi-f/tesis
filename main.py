@@ -6,7 +6,8 @@ import folium
 from flask import (
     Flask,
     render_template,
-    request
+    request,
+    jsonify
 )
 
 from folium.plugins import HeatMap
@@ -220,6 +221,48 @@ def mapa():
     return generar_mapa(
         indicios
     )
+
+
+@app.route("/estadisticas")
+def estadisticas():
+
+    categorias = request.args.getlist(
+        "categoria"
+    )
+
+    fecha_desde = request.args.get(
+        "desde"
+    )
+
+    fecha_hasta = request.args.get(
+        "hasta"
+    )
+
+    indicios = obtener_indicios(
+        categorias=categorias,
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta
+    )
+
+    resumen = {
+        "total": len(indicios),
+        "robo": 0,
+        "extorsion": 0,
+        "agresion": 0,
+        "otro": 0
+    }
+
+    for indicio in indicios:
+
+        categoria = indicio[
+            "categoria_delito"
+        ]
+
+        if categoria in resumen:
+
+            resumen[categoria] += 1
+
+    return jsonify(resumen)
 
 
 if __name__ == "__main__":

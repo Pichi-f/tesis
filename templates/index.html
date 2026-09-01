@@ -6,17 +6,13 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
         Cifra Negra - Visualización Geoespacial
     </title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -115,6 +111,22 @@
             border: none;
         }
 
+        .detalle-estadisticas {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .detalle-estadisticas p {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .estadistica hr {
+            margin-top: 15px;
+            border: none;
+            border-top: 1px solid #dddddd;
+        }
     </style>
 
 </head>
@@ -122,210 +134,263 @@
 
 <body>
 
-<div class="contenedor">
+    <div class="contenedor">
 
-    <aside class="panel">
+        <aside class="panel">
 
-        <h1 class="titulo">
-            Cifra Negra
-        </h1>
+            <h1 class="titulo">
+                Cifra Negra
+            </h1>
 
-        <p class="subtitulo">
-            Visor de incidentes
-        </p>
+            <p class="subtitulo">
+                Visor de incidentes
+            </p>
 
 
-        <form id="formulario-filtros">
+            <form id="formulario-filtros">
 
-            <div class="seccion">
+                <div class="seccion">
 
-                <h3>
-                    Categorías
-                </h3>
+                    <h3>
+                        Categorías
+                    </h3>
 
-                <label class="opcion">
-                    <input
-                        type="checkbox"
-                        name="categoria"
-                        value="robo"
-                        checked
-                    >
-                    Robo
-                </label>
+                    <label class="opcion">
+                        <input type="checkbox" name="categoria" value="robo" checked>
+                        Robo
+                    </label>
 
-                <label class="opcion">
-                    <input
-                        type="checkbox"
-                        name="categoria"
-                        value="extorsion"
-                        checked
-                    >
-                    Extorsión
-                </label>
+                    <label class="opcion">
+                        <input type="checkbox" name="categoria" value="extorsion" checked>
+                        Extorsión
+                    </label>
 
-                <label class="opcion">
-                    <input
-                        type="checkbox"
-                        name="categoria"
-                        value="agresion"
-                        checked
-                    >
-                    Agresión
-                </label>
+                    <label class="opcion">
+                        <input type="checkbox" name="categoria" value="agresion" checked>
+                        Agresión
+                    </label>
 
-                <label class="opcion">
-                    <input
-                        type="checkbox"
-                        name="categoria"
-                        value="otro"
-                        checked
-                    >
-                    Otro
-                </label>
+                    <label class="opcion">
+                        <input type="checkbox" name="categoria" value="otro" checked>
+                        Otro
+                    </label>
+
+                </div>
+
+
+                <div class="seccion">
+
+                    <h3>
+                        Rango de fechas
+                    </h3>
+
+                    <label>
+                        Desde
+                    </label>
+
+                    <input class="campo-fecha" type="date" id="fecha-desde">
+
+                    <label>
+                        Hasta
+                    </label>
+
+                    <input class="campo-fecha" type="date" id="fecha-hasta">
+
+                    <button class="boton" type="submit">
+                        Aplicar filtros
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div class="estadistica">
+
+                <div class="estadistica-numero" id="total-indicios">
+                    {{ total_indicios }}
+                </div>
+
+                <div class="estadistica-texto">
+                    Indicios mostrados
+                </div>
+
+                <hr>
+
+                <div class="detalle-estadisticas">
+
+                    <p>
+                        Robo:
+                        <strong id="cantidad-robo">
+                            0
+                        </strong>
+                    </p>
+
+                    <p>
+                        Extorsión:
+                        <strong id="cantidad-extorsion">
+                            0
+                        </strong>
+                    </p>
+
+                    <p>
+                        Agresión:
+                        <strong id="cantidad-agresion">
+                            0
+                        </strong>
+                    </p>
+
+                    <p>
+                        Otro:
+                        <strong id="cantidad-otro">
+                            0
+                        </strong>
+                    </p>
+
+                </div>
 
             </div>
 
-
-            <div class="seccion">
-
-                <h3>
-                    Rango de fechas
-                </h3>
-
-                <label>
-                    Desde
-                </label>
-
-                <input
-                    class="campo-fecha"
-                    type="date"
-                    id="fecha-desde"
-                >
-
-                <label>
-                    Hasta
-                </label>
-
-                <input
-                    class="campo-fecha"
-                    type="date"
-                    id="fecha-hasta"
-                >
-
-                <button
-                    class="boton"
-                    type="submit"
-                >
-                    Aplicar filtros
-                </button>
-
-            </div>
-
-        </form>
+        </aside>
 
 
-        <div class="estadistica">
+        <main class="mapa">
 
-            <div class="estadistica-numero">
-                {{ total_indicios }}
-            </div>
+            <iframe id="mapa" src="/mapa"></iframe>
 
-            <div class="estadistica-texto">
-                Indicios procesados
-            </div>
+        </main>
 
-        </div>
-
-    </aside>
+    </div>
 
 
-    <main class="mapa">
+    <script>
 
-        <iframe
-            id="mapa"
-            src="/mapa"
-        ></iframe>
+        const formulario = document.getElementById(
+            "formulario-filtros"
+        );
 
-    </main>
-
-</div>
-
-
-<script>
-
-    const formulario = document.getElementById(
-        "formulario-filtros"
-    );
-
-    const mapa = document.getElementById(
-        "mapa"
-    );
+        const mapa = document.getElementById(
+            "mapa"
+        );
 
 
-    formulario.addEventListener(
-        "submit",
-        function(evento) {
+        formulario.addEventListener(
+            "submit",
+            function (evento) {
 
-            evento.preventDefault();
+                evento.preventDefault();
 
-            const parametros = new URLSearchParams();
+                const parametros = new URLSearchParams();
 
-            const categorias =
-                document.querySelectorAll(
-                    'input[name="categoria"]:checked'
+                const categorias =
+                    document.querySelectorAll(
+                        'input[name="categoria"]:checked'
+                    );
+
+                categorias.forEach(
+                    function (categoria) {
+
+                        parametros.append(
+                            "categoria",
+                            categoria.value
+                        );
+
+                    }
                 );
 
-            categorias.forEach(
-                function(categoria) {
+
+                const desde =
+                    document.getElementById(
+                        "fecha-desde"
+                    ).value;
+
+                const hasta =
+                    document.getElementById(
+                        "fecha-hasta"
+                    ).value;
+
+
+                if (desde) {
 
                     parametros.append(
-                        "categoria",
-                        categoria.value
+                        "desde",
+                        desde
                     );
 
                 }
-            );
 
 
-            const desde =
-                document.getElementById(
-                    "fecha-desde"
-                ).value;
+                if (hasta) {
 
-            const hasta =
-                document.getElementById(
-                    "fecha-hasta"
-                ).value;
+                    parametros.append(
+                        "hasta",
+                        hasta
+                    );
+
+                }
 
 
-            if (desde) {
+                mapa.src =
+                    "/mapa?"
+                    + parametros.toString();
 
-                parametros.append(
-                    "desde",
-                    desde
+                actualizarEstadisticas(
+                    parametros
                 );
 
             }
+        );
 
 
-            if (hasta) {
+        async function actualizarEstadisticas(
+            parametros
+        ) {
 
-                parametros.append(
-                    "hasta",
-                    hasta
+            try {
+
+                const respuesta = await fetch(
+                    "/estadisticas?"
+                    + parametros.toString()
+                );
+
+                const datos = await respuesta.json();
+
+                document.getElementById(
+                    "total-indicios"
+                ).textContent = datos.total;
+
+                document.getElementById(
+                    "cantidad-robo"
+                ).textContent = datos.robo;
+
+                document.getElementById(
+                    "cantidad-extorsion"
+                ).textContent = datos.extorsion;
+
+                document.getElementById(
+                    "cantidad-agresion"
+                ).textContent = datos.agresion;
+
+                document.getElementById(
+                    "cantidad-otro"
+                ).textContent = datos.otro;
+
+            } catch (error) {
+
+                console.error(
+                    "Error al obtener estadísticas:",
+                    error
                 );
 
             }
-
-
-            mapa.src =
-                "/mapa?"
-                + parametros.toString();
 
         }
-    );
 
-</script>
+        actualizarEstadisticas(
+            new URLSearchParams()
+        );
+
+    </script>
 
 </body>
 
