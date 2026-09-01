@@ -1,0 +1,53 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDEs / editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Generated model artifacts
+modelos/*.pkl
+modelos/*.joblib
+modelos/*.h5
+modelos/*.bin
+
+# Local database files
+data/*.db
+data/*.sqlite3
+*.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+
+# Environment secrets
+.env
+.env.*
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage / test reports
+htmlcov/
+.coverage
+.coverage.*
+pytest_cache/
+
+# Optional: if you do not want to track the training data
+# data/dataset_entrenamiento.csv

@@ -1,0 +1,151 @@
+texto,categoria
+"me robaron el celular en la zona 1",robo
+"asaltaron a una persona cerca del trebol",robo
+"unos ladrones se llevaron una motocicleta",robo
+"reportan asalto en un bus de la roosevelt",robo
+"le quitaron la cartera a una señora",robo
+"dos cacos estaban robando telefonos",robo
+"se llevaron un carro estacionado en zona 10",robo
+"me asaltaron cuando salia del trabajo",robo
+"ladrones robaron un negocio durante la noche",robo
+"reportan robo de celulares en mixco",robo
+"me quitaron el telefono mientras esperaba el bus",robo
+"dos hombres asaltaron una tienda durante la noche",robo
+"robaron una motocicleta frente a una vivienda",robo
+"le arrebataron el celular a una joven",robo
+"entraron a una casa y se llevaron varios objetos",robo
+"ladrones robaron dinero de una tienda",robo
+"un hombre fue asaltado cuando caminaba por la calle",robo
+"reportan robo de una bicicleta en zona 7",robo
+"se llevaron las pertenencias de varios pasajeros",robo
+"robaron un vehiculo durante la madrugada",robo
+"dos sujetos le quitaron la mochila a un estudiante",robo
+"asaltaron a pasajeros de un autobus",robo
+"un ladron ingreso a un comercio y robo dinero",robo
+"reportan asalto cerca de un centro comercial",robo
+"le quitaron el telefono y la billetera",robo
+"robaron varias pertenencias de un automovil",robo
+"asaltaron a una persona saliendo de un banco",robo
+"un caco se llevo el celular de una señora",robo
+"ladrones entraron a una vivienda durante la madrugada",robo
+"reportan varios asaltos a peatones en la zona",robo
+"estan cobrando renta a los negocios del sector",extorsion
+"amenazaron al dueño si no paga la extorsion",extorsion
+"comerciantes denuncian cobro de renta",extorsion
+"estan exigiendo dinero a los pilotos de buses",extorsion
+"una pandilla pide dinero a cambio de no atacar",extorsion
+"recibio una llamada exigiendo dinero",extorsion
+"amenazan a comerciantes para que paguen",extorsion
+"estan extorsionando a varios negocios de mixco",extorsion
+"cobran renta cada semana en la colonia",extorsion
+"le pidieron dinero bajo amenazas",extorsion
+"delincuentes exigen dinero a varios comerciantes",extorsion
+"recibieron amenazas para obligarlos a pagar dinero",extorsion
+"estan pidiendo renta a los vendedores del mercado",extorsion
+"un comerciante recibe llamadas exigiendo pagos",extorsion
+"amenazan a una familia para que entregue dinero",extorsion
+"pilotos denuncian que les estan cobrando extorsion",extorsion
+"una pandilla exige pagos semanales a comerciantes",extorsion
+"recibio mensajes amenazantes pidiendo dinero",extorsion
+"los negocios deben pagar renta para poder trabajar",extorsion
+"extorsionistas amenazan a propietarios de comercios",extorsion
+"estan exigiendo dinero a transportistas de la zona",extorsion
+"comerciantes reciben amenazas si no entregan dinero",extorsion
+"una familia fue amenazada mediante llamadas telefonicas",extorsion
+"cobran extorsion a vendedores del mercado",extorsion
+"delincuentes piden dinero para no atacar el negocio",extorsion
+"reportan cobros ilegales a conductores de buses",extorsion
+"amenazaron a un comerciante para exigirle un pago",extorsion
+"varios negocios reciben mensajes de extorsion",extorsion
+"estan cobrando renta a los puestos del mercado",extorsion
+"una pandilla exige dinero semanalmente en la colonia",extorsion
+"golpearon a una persona afuera del mercado",agresion
+"hubo una pelea fuerte en villa nueva",agresion
+"un hombre fue atacado en la calle",agresion
+"reportan una balacera cerca del trebol",agresion
+"una persona resulto herida durante una pelea",agresion
+"atacaron a golpes a un joven",agresion
+"se escucharon disparos en la colonia",agresion
+"varias personas participaron en una pelea",agresion
+"un hombre amenazo y golpeo a otra persona",agresion
+"reportan agresion cerca de zona 18",agresion
+"un hombre golpeo a otro durante una discusion",agresion
+"varias personas atacaron a un joven en la calle",agresion
+"una persona fue herida durante una pelea",agresion
+"reportan disparos cerca del mercado",agresion
+"dos hombres se enfrentaron a golpes",agresion
+"una mujer fue atacada fisicamente en la calle",agresion
+"se escucho una balacera durante la madrugada",agresion
+"un joven resulto golpeado durante una pelea",agresion
+"varias personas fueron atacadas en el sector",agresion
+"reportan una persona herida por disparos",agresion
+"un grupo golpeo a un hombre afuera de un negocio",agresion
+"hubo disparos cerca de varias viviendas",agresion
+"un hombre agredio fisicamente a otra persona",agresion
+"reportan una pelea entre varias personas",agresion
+"una persona fue atacada con un arma",agresion
+"vecinos escucharon varios disparos durante la noche",agresion
+"golpearon a una persona dentro de un autobus",agresion
+"una pelea dejo a una persona herida",agresion
+"reportan ataque contra un hombre en la calle",agresion
+"se produjo una balacera cerca de la colonia",agresion
+"encontraron un vehiculo abandonado en la calle",otro
+"reportan actividad sospechosa cerca del mercado",otro
+"hay una persona sospechosa observando las casas",otro
+"vecinos reportan movimientos extraños durante la noche",otro
+"reportan presencia de personas armadas en el sector",otro
+"un grupo sospechoso permanece frente a varios negocios",otro
+"vecinos alertan sobre un vehiculo sospechoso",otro
+"hay movimientos sospechosos cerca de la colonia",otro
+"reportan amenazas sin conocer el motivo",otro
+"vecinos reportaron un incidente extraño en el sector",otro
+"vecinos observaron personas sospechosas cerca de las viviendas",otro
+"un vehiculo desconocido lleva varias horas en el sector",otro
+"reportan hombres armados caminando por la colonia",otro
+"una motocicleta sospechosa circula constantemente por el lugar",otro
+"vecinos alertan sobre personas vigilando varios negocios",otro
+"reportan comportamiento sospechoso cerca de una escuela",otro
+"un vehiculo sin placas permanece estacionado en el sector",otro
+"varias personas desconocidas observan las viviendas",otro
+"vecinos reportan actividad extraña durante la madrugada",otro
+"hay hombres sospechosos rondando varios comercios",otro
+"reportan una motocicleta sospechosa frente a una vivienda",otro
+"personas desconocidas permanecen cerca del mercado",otro
+"vecinos alertan sobre movimientos extraños en la colonia",otro
+"reportan sujetos sospechosos cerca de una parada de bus",otro
+"un automovil desconocido circula repetidamente por el sector",otro
+"hay personas armadas observando los negocios",otro
+"vecinos reportaron comportamiento extraño durante la noche",otro
+"un grupo desconocido permanece cerca de varias casas",otro
+"reportan actividad sospechosa alrededor de un comercio",otro
+"una persona desconocida vigila varias viviendas",otro
+"que bonito estuvo el partido de ayer",ruido
+"hay mucho trafico esta mañana",ruido
+"feliz lunes para todos",ruido
+"alguien sabe donde venden buena comida",ruido
+"esta lloviendo bastante en la ciudad",ruido
+"el partido estuvo muy emocionante",ruido
+"buenos dias tengan todos",ruido
+"que bonito se mira el cielo hoy",ruido
+"hay cola para entrar al concierto",ruido
+"alguien recomienda un restaurante en zona 10",ruido
+"mañana tengo que ir temprano al trabajo",ruido
+"alguien sabe a que hora abre el centro comercial",ruido
+"vamos a jugar futbol esta tarde",ruido
+"estoy buscando recomendaciones de peliculas",ruido
+"que calor esta haciendo esta tarde",ruido
+"alguien quiere ir a comer el fin de semana",ruido
+"el trafico esta bastante pesado por la roosevelt",ruido
+"que buena estuvo la pelicula de anoche",ruido
+"vendo una bicicleta en buen estado",ruido
+"busco apartamento para alquilar en zona 10",ruido
+"alguien sabe donde puedo comprar una computadora",ruido
+"mañana sera un buen dia para salir a caminar",ruido
+"felicidades a todos los graduados",ruido
+"se fue la luz en mi colonia",ruido
+"hay bastante lluvia camino a mixco",ruido
+"el autobus viene bastante lleno esta mañana",ruido
+"que restaurante recomiendan para cenar",ruido
+"vendo entradas para el concierto del sabado",ruido
+"alguien sabe el resultado del partido",ruido
+"esta muy bonito el clima en villa nueva",ruido

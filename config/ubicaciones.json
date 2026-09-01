@@ -1,0 +1,31 @@
+{
+    "zona 1": {
+        "nombre": "Zona 1, Ciudad de Guatemala",
+        "latitud": 14.6416142,
+        "longitud": -90.5132836
+    },
+
+    "mixco": {
+        "nombre": "Mixco",
+        "latitud": 14.63077,
+        "longitud": -90.60711
+    },
+
+    "villa nueva": {
+        "nombre": "Villa Nueva",
+        "latitud": 14.52512,
+        "longitud": -90.58544
+    },
+
+    "san miguel petapa": {
+        "nombre": "San Miguel Petapa",
+        "latitud": 14.4977,
+        "longitud": -90.5560
+    },
+
+    "el trebol": {
+        "nombre": "El Trébol",
+        "latitud": 14.61636,
+        "longitud": -90.53487
+    }
+}
