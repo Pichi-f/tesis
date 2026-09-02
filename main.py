@@ -116,16 +116,39 @@ def obtener_indicios(
 
 def generar_mapa(indicios):
 
-    mapa = folium.Map(
-        location=[
+    # ==========================================
+    # CENTRO Y ZOOM INICIAL
+    # ==========================================
+
+    if len(indicios) == 1:
+
+        centro = [
+            indicios[0]["latitud"],
+            indicios[0]["longitud"]
+        ]
+
+        zoom = 14
+
+    else:
+
+        centro = [
             14.61,
             -90.55
-        ],
-        zoom_start=11,
+        ]
+
+        zoom = 11
+
+
+    mapa = folium.Map(
+        location=centro,
+        zoom_start=zoom,
         control_scale=True
     )
+    
+    
 
     puntos_calor = []
+
 
     for indicio in indicios:
 
@@ -149,6 +172,7 @@ def generar_mapa(indicios):
             "fecha_publicacion"
         ]
 
+
         puntos_calor.append(
             [
                 latitud,
@@ -156,14 +180,20 @@ def generar_mapa(indicios):
             ]
         )
 
+
         folium.CircleMarker(
+
             location=[
                 latitud,
                 longitud
             ],
+
             radius=6,
+
             fill=True,
+
             fill_opacity=0.8,
+
             popup=(
                 f"<b>Categoría:</b> "
                 f"{categoria}<br>"
@@ -172,7 +202,13 @@ def generar_mapa(indicios):
                 f"<b>Fecha:</b> "
                 f"{fecha}"
             )
+
         ).add_to(mapa)
+
+
+    # ==========================================
+    # MAPA DE CALOR
+    # ==========================================
 
     if puntos_calor:
 
@@ -182,6 +218,50 @@ def generar_mapa(indicios):
             blur=20,
             min_opacity=0.4
         ).add_to(mapa)
+
+
+    # ==========================================
+    # AJUSTAR VISTA
+    # ==========================================
+
+    if len(puntos_calor) > 1:
+
+        mapa.fit_bounds(
+            puntos_calor,
+            padding=(
+                40,
+                40
+            )
+        )
+        
+    if not indicios:
+
+        folium.Marker(
+            location=[
+                14.61,
+                -90.55
+            ],
+
+            icon=folium.DivIcon(
+                html="""
+                    <div style="
+                        width: 260px;
+                        padding: 12px;
+                        background: white;
+                        border: 1px solid #cccccc;
+                        border-radius: 6px;
+                        font-size: 14px;
+                        text-align: center;
+                    ">
+                        No se encontraron incidentes
+                        con los filtros seleccionados.
+                    </div>
+                """
+            )
+        ).add_to(mapa)
+
+    return mapa.get_root().render()
+
 
     return mapa.get_root().render()
 

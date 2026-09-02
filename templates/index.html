@@ -127,6 +127,41 @@
             border: none;
             border-top: 1px solid #dddddd;
         }
+
+        .boton-secundario {
+            margin-top: 10px;
+            background-color: #6c757d;
+        }
+
+        .boton-secundario:hover {
+            background-color: #565e64;
+        }
+
+        .leyenda-calor {
+            margin-top: 10px;
+        }
+
+        .barra-calor {
+            height: 14px;
+            border-radius: 7px;
+
+            background: linear-gradient(to right,
+                    blue,
+                    cyan,
+                    lime,
+                    yellow,
+                    red);
+        }
+
+        .etiquetas-calor {
+            display: flex;
+            justify-content: space-between;
+
+            margin-top: 5px;
+
+            color: #666666;
+            font-size: 11px;
+        }
     </style>
 
 </head>
@@ -200,6 +235,10 @@
                         Aplicar filtros
                     </button>
 
+                    <button class="boton boton-secundario" type="button" id="limpiar-filtros">
+                        Limpiar filtros
+                    </button>
+
                 </div>
 
             </form>
@@ -251,6 +290,36 @@
 
             </div>
 
+            <div class="seccion">
+
+                <h3>
+                    Intensidad de incidentes
+                </h3>
+
+                <div class="leyenda-calor">
+
+                    <div class="barra-calor"></div>
+
+                    <div class="etiquetas-calor">
+
+                        <span>
+                            Baja
+                        </span>
+
+                        <span>
+                            Media
+                        </span>
+
+                        <span>
+                            Alta
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </aside>
 
 
@@ -273,6 +342,46 @@
             "mapa"
         );
 
+        const botonLimpiar = document.getElementById(
+            "limpiar-filtros"
+        );
+
+        botonLimpiar.addEventListener(
+            "click",
+            function () {
+
+                const categorias =
+                    document.querySelectorAll(
+                        'input[name="categoria"]'
+                    );
+
+                categorias.forEach(
+                    function (categoria) {
+
+                        categoria.checked = true;
+
+                    }
+                );
+
+
+                document.getElementById(
+                    "fecha-desde"
+                ).value = "";
+
+                document.getElementById(
+                    "fecha-hasta"
+                ).value = "";
+
+
+                mapa.src = "/mapa";
+
+
+                actualizarEstadisticas(
+                    new URLSearchParams()
+                );
+
+            }
+        );
 
         formulario.addEventListener(
             "submit",
@@ -309,6 +418,20 @@
                         "fecha-hasta"
                     ).value;
 
+                if (
+                    desde
+                    && hasta
+                    && desde > hasta
+                ) {
+
+                    alert(
+                        "La fecha inicial no puede ser "
+                        + "posterior a la fecha final."
+                    );
+
+                    return;
+                }
+
 
                 if (desde) {
 
@@ -328,7 +451,6 @@
                     );
 
                 }
-
 
                 mapa.src =
                     "/mapa?"
