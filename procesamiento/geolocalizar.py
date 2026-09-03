@@ -3,11 +3,31 @@ import re
 import unicodedata
 from pathlib import Path
 
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 RUTA_UBICACIONES = (
     BASE_DIR / "config" / "ubicaciones.json"
+)
+
+
+# =========================================================
+# GEOCODIFICADOR
+# =========================================================
+
+geolocalizador = Nominatim(
+    user_agent="tesis_cifra_negra_usac_2026"
+)
+
+geocodificar = RateLimiter(
+    geolocalizador.geocode,
+    min_delay_seconds=1,
+    max_retries=2,
+    error_wait_seconds=2,
+    swallow_exceptions=True
 )
 
 
@@ -29,7 +49,6 @@ def normalizar_texto(texto):
 
     texto = texto.lower()
 
-    # quitar tildes
     texto = unicodedata.normalize(
         "NFD",
         texto
@@ -44,14 +63,11 @@ def normalizar_texto(texto):
     return texto
 
 
+# =========================================================
+# COORDENADAS EXPLÍCITAS
+# =========================================================
+
 def extraer_coordenadas(texto):
-
-    """
-    Busca coordenadas explícitas dentro del texto.
-
-    Ejemplo:
-    14.6416, -90.5133
-    """
 
     if not texto:
         return None
@@ -78,7 +94,6 @@ def extraer_coordenadas(texto):
         coincidencia.group(2)
     )
 
-    # validar coordenadas
     if not (-90 <= latitud <= 90):
         return None
 
@@ -93,13 +108,194 @@ def extraer_coordenadas(texto):
     }
 
 
+# =========================================================
+# EXTRAER REFERENCIAS DEL TEXTO
+# =========================================================
+
+def extraer_referencia_textual(texto):
+
+    if not texto:
+        return None
+
+    # -----------------------------------------
+    # Buscar zonas
+    # -----------------------------------------
+
+    zona = re.search(
+        r"\bzona\s+\d{1,2}\b",
+        texto,
+        re.IGNORECASE
+    )
+
+    if zona:
+        return zona.group(0)
+
+
+    # -----------------------------------------
+    # Buscar calles, colonias, avenidas, etc.
+    # -----------------------------------------
+
+    patron = (
+        r"\b"
+        r"(?:"
+        r"calzada|"
+        r"avenida|"
+        r"colonia|"
+        r"bulevar|"
+        r"boulevard|"
+        r"carretera|"
+        r"calle"
+        r")"
+        r"\s+"
+        r"[A-Za-zÁÉÍÓÚÑáéíóúñ0-9]+"
+        r"(?:\s+[A-Za-zÁÉÍÓÚÑáéíóúñ0-9]+){0,3}"
+    )
+
+    coincidencia = re.search(
+        patron,
+        texto,
+        re.IGNORECASE
+    )
+
+    if not coincidencia:
+        return None
+
+    candidato = coincidencia.group(0)
+
+    # palabras que indican que la ubicación
+    # probablemente ya terminó
+    palabras_corte = {
+        "cerca",
+        "donde",
+        "cuando",
+        "reportan",
+        "reportaron",
+        "ocurrio",
+        "ocurrió",
+        "hubo",
+        "tengan",
+        "zona"
+    }
+
+    palabras = candidato.split()
+
+    resultado = []
+
+    for palabra in palabras:
+
+        if (
+            resultado
+            and normalizar_texto(palabra)
+            in palabras_corte
+        ):
+            break
+
+        resultado.append(
+            palabra
+        )
+
+    if len(resultado) < 2:
+        return None
+
+    return " ".join(resultado)
+
+
+# =========================================================
+# VALIDAR ÁREA METROPOLITANA
+# =========================================================
+
+def dentro_area_metropolitana(
+    latitud,
+    longitud
+):
+
+    return (
+        14.40 <= latitud <= 14.80
+        and
+        -90.80 <= longitud <= -90.30
+    )
+
+
+# =========================================================
+# GEOCODIFICACIÓN EXTERNA
+# =========================================================
+
+def geocodificar_referencia(
+    referencia
+):
+
+    if not referencia:
+        return None
+
+    consulta = (
+        f"{referencia}, Guatemala, Guatemala"
+    )
+
+    try:
+
+        ubicacion = geocodificar(
+            consulta,
+            exactly_one=True,
+            country_codes="gt",
+            language="es",
+            timeout=10,
+            viewbox=[
+                (14.80, -90.80),
+                (14.40, -90.30)
+            ],
+            bounded=True
+        )
+
+    except Exception as error:
+
+        print(
+            f"Error de geocodificación: "
+            f"{error}"
+        )
+
+        return None
+
+
+    if not ubicacion:
+        return None
+
+
+    latitud = float(
+        ubicacion.latitude
+    )
+
+    longitud = float(
+        ubicacion.longitude
+    )
+
+
+    if not dentro_area_metropolitana(
+        latitud,
+        longitud
+    ):
+        return None
+
+
+    return {
+        "nombre": ubicacion.address,
+        "latitud": latitud,
+        "longitud": longitud,
+        "metodo": "geocodificacion_nominatim",
+        "referencia": referencia
+    }
+
+
+# =========================================================
+# FUNCIÓN PRINCIPAL
+# =========================================================
+
 def buscar_ubicacion(
     texto,
     referencia_espacial=None
 ):
 
     # =====================================================
-    # 1. BUSCAR COORDENADAS EXPLÍCITAS
+    # 1. COORDENADAS EXPLÍCITAS
     # =====================================================
 
     coordenadas = extraer_coordenadas(
@@ -109,37 +305,35 @@ def buscar_ubicacion(
     if coordenadas:
         return coordenadas
 
+
     # =====================================================
-    # 2. CARGAR CATÁLOGO LOCAL
+    # 2. CATÁLOGO LOCAL
     # =====================================================
 
     ubicaciones = cargar_ubicaciones()
 
-    # primero usamos referencia_espacial porque
-    # es más específica que todo el texto
     contenido = ""
 
     if referencia_espacial:
-        contenido += referencia_espacial + " "
+        contenido += (
+            referencia_espacial
+            + " "
+        )
 
     if texto:
         contenido += texto
 
-    contenido = normalizar_texto(
+    contenido_normalizado = normalizar_texto(
         contenido
     )
 
-    # =====================================================
-    # 3. BUSCAR UBICACIONES CONOCIDAS
-    # =====================================================
 
-    # ordenar desde nombres más largos
-    # para encontrar primero referencias específicas
     claves = sorted(
         ubicaciones.keys(),
         key=len,
         reverse=True
     )
+
 
     for clave in claves:
 
@@ -147,9 +341,11 @@ def buscar_ubicacion(
             clave
         )
 
-        if clave_normalizada in contenido:
+        if clave_normalizada in contenido_normalizado:
 
-            datos = ubicaciones[clave]
+            datos = ubicaciones[
+                clave
+            ]
 
             return {
                 "nombre": datos["nombre"],
@@ -158,14 +354,44 @@ def buscar_ubicacion(
                 "metodo": "catalogo_local"
             }
 
-    return None
 
+    # =====================================================
+    # 3. OBTENER REFERENCIA PARA GEOCODIFICACIÓN
+    # =====================================================
+
+    if referencia_espacial:
+
+        referencia = referencia_espacial
+
+    else:
+
+        referencia = extraer_referencia_textual(
+            texto
+        )
+
+
+    if not referencia:
+        return None
+
+
+    # =====================================================
+    # 4. GEOCODIFICACIÓN AUTOMÁTICA
+    # =====================================================
+
+    return geocodificar_referencia(
+        referencia
+    )
+
+
+# =========================================================
+# PRUEBA
+# =========================================================
 
 if __name__ == "__main__":
 
     texto_prueba = (
-        "Reportan un incidente en "
-        "14.6205, -90.5312"
+        "Vecinos reportan un asalto "
+        "en la colonia El Milagro."
     )
 
     resultado = buscar_ubicacion(
