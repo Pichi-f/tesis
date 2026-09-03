@@ -13,6 +13,10 @@ RUTA_UBICACIONES = (
     BASE_DIR / "config" / "ubicaciones.json"
 )
 
+RUTA_CACHE = (
+    BASE_DIR / "data" / "cache_geocodificacion.json"
+)
+
 
 # =========================================================
 # GEOCODIFICADOR
@@ -40,6 +44,45 @@ def cargar_ubicaciones():
     ) as archivo:
 
         return json.load(archivo)
+    
+    
+def cargar_cache():
+
+    if not RUTA_CACHE.exists():
+        return {}
+
+    try:
+
+        with open(
+            RUTA_CACHE,
+            "r",
+            encoding="utf-8"
+        ) as archivo:
+
+            return json.load(archivo)
+
+    except (
+        json.JSONDecodeError,
+        OSError
+    ):
+
+        return {}
+
+
+def guardar_cache(cache):
+
+    with open(
+        RUTA_CACHE,
+        "w",
+        encoding="utf-8"
+    ) as archivo:
+
+        json.dump(
+            cache,
+            archivo,
+            ensure_ascii=False,
+            indent=4
+        )
 
 
 def normalizar_texto(texto):
@@ -227,9 +270,41 @@ def geocodificar_referencia(
     if not referencia:
         return None
 
+
+    # ==========================================
+    # 1. REVISAR CACHÉ
+    # ==========================================
+
+    cache = cargar_cache()
+
+    clave_cache = normalizar_texto(
+        referencia
+    ).strip()
+
+
+    if clave_cache in cache:
+
+        datos = cache[
+            clave_cache
+        ]
+
+        return {
+            "nombre": datos["nombre"],
+            "latitud": datos["latitud"],
+            "longitud": datos["longitud"],
+            "metodo": "cache_geocodificacion",
+            "referencia": referencia
+        }
+
+
+    # ==========================================
+    # 2. CONSULTAR NOMINATIM
+    # ==========================================
+
     consulta = (
         f"{referencia}, Guatemala, Guatemala"
     )
+
 
     try:
 
@@ -276,11 +351,35 @@ def geocodificar_referencia(
         return None
 
 
-    return {
+    # ==========================================
+    # 3. GUARDAR RESULTADO EN CACHÉ
+    # ==========================================
+
+    cache[clave_cache] = {
+
         "nombre": ubicacion.address,
+
         "latitud": latitud,
+
+        "longitud": longitud
+    }
+
+
+    guardar_cache(
+        cache
+    )
+
+
+    return {
+
+        "nombre": ubicacion.address,
+
+        "latitud": latitud,
+
         "longitud": longitud,
+
         "metodo": "geocodificacion_nominatim",
+
         "referencia": referencia
     }
 
@@ -390,8 +489,8 @@ def buscar_ubicacion(
 if __name__ == "__main__":
 
     texto_prueba = (
-        "Vecinos reportan un asalto "
-        "en la colonia El Milagro."
+        "Reportan un asalto en la "
+        "Calzada Roosevelt."
     )
 
     resultado = buscar_ubicacion(
