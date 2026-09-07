@@ -15,5 +15,11 @@
         "latitud": 14.6182293,
         "longitud": -90.5426658,
         "precision": "media"
+    },
+    "avenida petapa": {
+        "nombre": "Avenida Petapa, Santa Elisa, Zona 12, Ciudad de Guatemala, Zona 4, Departamento de Guatemala, 01012, Guatemala",
+        "latitud": 14.586515,
+        "longitud": -90.5454103,
+        "precision": "baja"
     }
 }

@@ -3,17 +3,12 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-DB_PATH = (
-    BASE_DIR / "data" / "cifra_negra.db"
-)
+DB_PATH = BASE_DIR / "data" / "cifra_negra.db"
 
 
 def consultar_indicios():
 
-    conexion = sqlite3.connect(
-        DB_PATH
-    )
+    conexion = sqlite3.connect(DB_PATH)
 
     conexion.row_factory = sqlite3.Row
 
@@ -28,7 +23,10 @@ def consultar_indicios():
             score_clasificacion,
             latitud,
             longitud,
-            fecha_publicacion
+            fecha_publicacion,
+            referencia_geografica,
+            metodo_geolocalizacion,
+            precision_geografica
         FROM indicio_procesado
         ORDER BY id_indicio
     """)
@@ -36,8 +34,7 @@ def consultar_indicios():
     indicios = cursor.fetchall()
 
     print(
-        f"\nTotal de indicios: "
-        f"{len(indicios)}\n"
+        f"\nTotal de indicios: {len(indicios)}\n"
     )
 
     for indicio in indicios:
@@ -77,6 +74,21 @@ def consultar_indicios():
         print(
             f"Longitud: "
             f"{indicio['longitud']}"
+        )
+
+        print(
+            f"Referencia geográfica: "
+            f"{indicio['referencia_geografica']}"
+        )
+
+        print(
+            f"Método de geolocalización: "
+            f"{indicio['metodo_geolocalizacion']}"
+        )
+
+        print(
+            f"Precisión geográfica: "
+            f"{indicio['precision_geografica']}"
         )
 
         print(

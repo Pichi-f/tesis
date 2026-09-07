@@ -76,7 +76,10 @@ def insertar_indicio(
     score,
     latitud,
     longitud,
-    fecha_publicacion
+    fecha_publicacion,
+    referencia_geografica,
+    metodo_geolocalizacion,
+    precision_geografica
 ):
 
     cursor = conexion.cursor()
@@ -89,9 +92,12 @@ def insertar_indicio(
             score_clasificacion,
             latitud,
             longitud,
-            fecha_publicacion
+            fecha_publicacion,
+            referencia_geografica,
+            metodo_geolocalizacion,
+            precision_geografica
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         id_reporte,
         texto_procesado,
@@ -99,7 +105,10 @@ def insertar_indicio(
         score,
         latitud,
         longitud,
-        fecha_publicacion
+        fecha_publicacion,
+        referencia_geografica,
+        metodo_geolocalizacion,
+        precision_geografica
     ))
 
 
@@ -253,10 +262,31 @@ def procesar_reportes():
                 f"Longitud: "
                 f"{ubicacion['longitud']}"
             )
+            
+            print(
+                f"Método: {ubicacion['metodo']}"
+            )
+
+            print(
+                f"Precisión geográfica: "
+                f"{ubicacion['precision']}"
+            )
 
             # =================================================
             # 4. INSERTAR INDICIO PROCESADO
             # =================================================
+
+            referencia_geografica = ubicacion.get(
+                "referencia"
+            )
+
+            if not referencia_geografica:
+
+                referencia_geografica = (
+                    referencia_espacial
+                    or ubicacion["nombre"]
+                )
+
 
             insertar_indicio(
                 conexion,
@@ -266,7 +296,10 @@ def procesar_reportes():
                 score,
                 ubicacion["latitud"],
                 ubicacion["longitud"],
-                fecha_publicacion
+                fecha_publicacion,
+                referencia_geografica,
+                ubicacion["metodo"],
+                ubicacion["precision"]
             )
 
             # =================================================
