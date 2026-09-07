@@ -106,6 +106,68 @@ def normalizar_texto(texto):
     return texto
 
 
+def determinar_precision(
+    referencia,
+    metodo
+):
+
+    # Coordenadas directas:
+    # máxima precisión disponible
+    if metodo == "coordenadas_explicitas":
+        return "alta"
+
+    if not referencia:
+        return "baja"
+
+    referencia_normalizada = normalizar_texto(
+        referencia
+    )
+
+    # Colonias, zonas y municipios
+    # son referencias relativamente acotadas
+    if "colonia" in referencia_normalizada:
+        return "media"
+
+    if re.search(
+        r"\bzona\s+\d{1,2}\b",
+        referencia_normalizada
+    ):
+        return "media"
+
+    municipios = [
+        "mixco",
+        "villa nueva",
+        "san miguel petapa",
+        "guatemala",
+        "santa catarina pinula",
+        "villa canales"
+    ]
+
+    for municipio in municipios:
+
+        if municipio in referencia_normalizada:
+            return "media"
+
+    # Vías extensas:
+    # una coordenada representa solamente
+    # un punto aproximado de la vía
+    vias = [
+        "calzada",
+        "avenida",
+        "carretera",
+        "bulevar",
+        "boulevard",
+        "calle"
+    ]
+
+    for via in vias:
+
+        if via in referencia_normalizada:
+            return "baja"
+
+    return "baja"
+
+
 # =========================================================
 # COORDENADAS EXPLÍCITAS
 # =========================================================
@@ -147,7 +209,8 @@ def extraer_coordenadas(texto):
         "nombre": "Coordenadas explícitas",
         "latitud": latitud,
         "longitud": longitud,
-        "metodo": "coordenadas_explicitas"
+        "metodo": "coordenadas_explicitas",
+        "precision": "alta"
     }
 
 
@@ -160,23 +223,25 @@ def extraer_referencia_textual(texto):
     if not texto:
         return None
 
-    # -----------------------------------------
-    # Buscar zonas
-    # -----------------------------------------
+    # ==========================================
+    # BUSCAR ZONA
+    # ==========================================
 
-    zona = re.search(
+    coincidencia_zona = re.search(
         r"\bzona\s+\d{1,2}\b",
         texto,
         re.IGNORECASE
     )
 
-    if zona:
-        return zona.group(0)
+    zona = None
+
+    if coincidencia_zona:
+        zona = coincidencia_zona.group(0)
 
 
-    # -----------------------------------------
-    # Buscar calles, colonias, avenidas, etc.
-    # -----------------------------------------
+    # ==========================================
+    # BUSCAR VÍA O COLONIA
+    # ==========================================
 
     patron = (
         r"\b"
@@ -200,47 +265,69 @@ def extraer_referencia_textual(texto):
         re.IGNORECASE
     )
 
-    if not coincidencia:
-        return None
+    referencia = None
 
-    candidato = coincidencia.group(0)
+    if coincidencia:
 
-    # palabras que indican que la ubicación
-    # probablemente ya terminó
-    palabras_corte = {
-        "cerca",
-        "donde",
-        "cuando",
-        "reportan",
-        "reportaron",
-        "ocurrio",
-        "ocurrió",
-        "hubo",
-        "tengan",
-        "zona"
-    }
+        candidato = coincidencia.group(0)
 
-    palabras = candidato.split()
+        palabras_corte = {
+            "cerca",
+            "donde",
+            "cuando",
+            "reportan",
+            "reportaron",
+            "ocurrio",
+            "ocurrió",
+            "hubo",
+            "tengan"
+        }
 
-    resultado = []
+        palabras = candidato.split()
 
-    for palabra in palabras:
+        resultado = []
 
-        if (
-            resultado
-            and normalizar_texto(palabra)
-            in palabras_corte
+        for palabra in palabras:
+
+            if (
+                resultado
+                and normalizar_texto(palabra)
+                in palabras_corte
+            ):
+                break
+
+            resultado.append(
+                palabra
+            )
+
+        if len(resultado) >= 2:
+            referencia = " ".join(resultado)
+
+
+    # ==========================================
+    # COMBINAR REFERENCIA + ZONA
+    # ==========================================
+
+    if referencia and zona:
+
+        if normalizar_texto(zona) not in normalizar_texto(
+            referencia
         ):
-            break
 
-        resultado.append(
-            palabra
-        )
+            return (
+                f"{referencia}, {zona}"
+            )
 
-    if len(resultado) < 2:
-        return None
 
-    return " ".join(resultado)
+    if referencia:
+        return referencia
+
+
+    if zona:
+        return zona
+
+
+    return None
 
 
 # =========================================================
@@ -288,12 +375,24 @@ def geocodificar_referencia(
             clave_cache
         ]
 
+        precision = datos.get(
+            "precision"
+        )
+
+        if not precision:
+
+            precision = determinar_precision(
+                referencia,
+                "cache_geocodificacion"
+            )
+
         return {
             "nombre": datos["nombre"],
             "latitud": datos["latitud"],
             "longitud": datos["longitud"],
             "metodo": "cache_geocodificacion",
-            "referencia": referencia
+            "referencia": referencia,
+            "precision": precision
         }
 
 
@@ -352,6 +451,16 @@ def geocodificar_referencia(
 
 
     # ==========================================
+    # CALCULAR NIVEL DE PRECISIÓN
+    # ==========================================
+
+    precision = determinar_precision(
+        referencia,
+        "geocodificacion_nominatim"
+    )
+
+
+    # ==========================================
     # 3. GUARDAR RESULTADO EN CACHÉ
     # ==========================================
 
@@ -361,7 +470,9 @@ def geocodificar_referencia(
 
         "latitud": latitud,
 
-        "longitud": longitud
+        "longitud": longitud,
+
+        "precision": precision
     }
 
 
@@ -380,7 +491,9 @@ def geocodificar_referencia(
 
         "metodo": "geocodificacion_nominatim",
 
-        "referencia": referencia
+        "referencia": referencia,
+
+        "precision": precision
     }
 
 
@@ -450,7 +563,11 @@ def buscar_ubicacion(
                 "nombre": datos["nombre"],
                 "latitud": datos["latitud"],
                 "longitud": datos["longitud"],
-                "metodo": "catalogo_local"
+                "metodo": "catalogo_local",
+                "precision": determinar_precision(
+                    clave,
+                    "catalogo_local"
+                )
             }
 
 
@@ -490,7 +607,7 @@ if __name__ == "__main__":
 
     texto_prueba = (
         "Reportan un asalto en la "
-        "Calzada Roosevelt."
+        "Calzada Roosevelt zona 7."
     )
 
     resultado = buscar_ubicacion(
@@ -522,6 +639,11 @@ if __name__ == "__main__":
         print(
             f"Método: "
             f"{resultado['metodo']}"
+        )
+        
+        print(
+            f"Precisión: "
+            f"{resultado['precision']}"
         )
 
     else:
