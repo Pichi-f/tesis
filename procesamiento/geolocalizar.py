@@ -2,6 +2,7 @@ import json
 import re
 import unicodedata
 from pathlib import Path
+from functools import lru_cache
 
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
@@ -35,6 +36,7 @@ geocodificar = RateLimiter(
 )
 
 
+@lru_cache(maxsize=1)
 def cargar_ubicaciones():
 
     with open(

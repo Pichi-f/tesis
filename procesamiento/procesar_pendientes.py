@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import time
 from pathlib import Path
 from configurar_logs import obtener_logger
 
@@ -122,20 +123,55 @@ def procesar_reportes():
     umbral = configuracion[
         "umbral_confianza"
     ]
-    
-    logger.info(
-        "Inicio del procesamiento | "
-        "umbral=%.2f",
-        umbral
+
+    tamano_lote = configuracion.get(
+        "tamano_lote",
+        50
     )
+
 
     print(
         f"\nUmbral de confianza: "
         f"{umbral * 100:.2f}%"
     )
 
-    # cargar modelo previamente entrenado
+    print(
+        f"Tamaño de lote: "
+        f"{tamano_lote}"
+    )
+
+
+    logger.info(
+        "Inicio del procesamiento | "
+        "umbral=%.2f | lote=%d",
+        umbral,
+        tamano_lote
+    )
+
+
+    # ==========================================
+    # CARGAR MODELOS
+    # ==========================================
+
+    inicio_modelo = time.perf_counter()
+
     vectorizador, modelo = cargar_modelos()
+
+    tiempo_modelo = (
+        time.perf_counter()
+        - inicio_modelo
+    )
+
+
+    logger.info(
+        "Modelo cargado | tiempo=%.4f s",
+        tiempo_modelo
+    )
+
+
+    # ==========================================
+    # BASE DE DATOS
+    # ==========================================
 
     conexion = sqlite3.connect(
         DB_PATH
@@ -145,32 +181,47 @@ def procesar_reportes():
         "PRAGMA foreign_keys = ON"
     )
 
+
     reportes = obtener_reportes_pendientes(
         conexion
     )
-    
-    logger.info(
-        "Reportes pendientes=%d",
-        len(reportes)
-    )
+
 
     print(
         f"Reportes pendientes: "
         f"{len(reportes)}\n"
     )
 
+
+    logger.info(
+        "Reportes pendientes=%d",
+        len(reportes)
+    )
+
+
     procesados = 0
     ruido = 0
     errores = 0
 
+    operaciones_lote = 0
+
+
+    inicio_pipeline = (
+        time.perf_counter()
+    )
+
+
+    # ==========================================
+    # PROCESAR REPORTES
+    # ==========================================
+
     for reporte in reportes:
 
-        (
-            id_reporte,
-            texto_crudo,
-            referencia_espacial,
-            fecha_publicacion
-        ) = reporte
+        id_reporte = reporte[0]
+        texto_crudo = reporte[1]
+        referencia_espacial = reporte[2]
+        fecha_publicacion = reporte[3]
+
 
         print("=" * 65)
 
@@ -183,31 +234,43 @@ def procesar_reportes():
             f"Texto: {texto_crudo}"
         )
 
+
         try:
 
-            # =================================================
-            # 1. CLASIFICACIÓN
-            # =================================================
+            # ==================================
+            # INICIAR LOTE
+            # ==================================
 
-            (
-                categoria,
-                score,
-                texto_procesado
-            ) = clasificar_texto(
-                texto_crudo,
-                vectorizador,
-                modelo
+            if operaciones_lote == 0:
+
+                conexion.execute(
+                    "BEGIN"
+                )
+
+
+            # El savepoint permite deshacer
+            # solamente el reporte actual.
+            conexion.execute(
+                "SAVEPOINT reporte_actual"
             )
-            
-            logger.info(
-                "Reporte=%d | categoria=%s | score=%.4f",
-                id_reporte,
-                categoria,
-                score
+
+
+            # ==================================
+            # CLASIFICACIÓN
+            # ==================================
+
+            categoria, score, texto_procesado = (
+                clasificar_texto(
+                    texto_crudo,
+                    vectorizador,
+                    modelo
+                )
             )
+
 
             print(
-                f"Categoría: {categoria}"
+                f"Categoría: "
+                f"{categoria}"
             )
 
             print(
@@ -215,13 +278,25 @@ def procesar_reportes():
                 f"{score * 100:.2f}%"
             )
 
-            # =================================================
-            # 2. FILTRAR RUIDO
-            # =================================================
+
+            logger.info(
+                "Reporte=%d | "
+                "categoria=%s | "
+                "score=%.4f",
+                id_reporte,
+                categoria,
+                score
+            )
+
+
+            # ==================================
+            # RUIDO / BAJA CONFIANZA
+            # ==================================
 
             if (
                 categoria == "ruido"
-                or score < umbral
+                or
+                score < umbral
             ):
 
                 actualizar_estado(
@@ -230,32 +305,206 @@ def procesar_reportes():
                     "ruido"
                 )
 
-                conexion.commit()
+
+                conexion.execute(
+                    "RELEASE SAVEPOINT reporte_actual"
+                )
+
 
                 ruido += 1
-                
+
+                operaciones_lote += 1
+
+
                 logger.info(
-                    "Reporte=%d | resultado=ruido",
+                    "Reporte=%d | "
+                    "resultado=ruido",
                     id_reporte
                 )
 
+
                 print(
-                    "Resultado: descartado "
-                    "como ruido."
+                    "Resultado: "
+                    "descartado como ruido."
                 )
 
-                continue
 
-            # =================================================
-            # 3. GEOLOCALIZACIÓN
-            # =================================================
+            else:
 
-            ubicacion = buscar_ubicacion(
-                texto_crudo,
-                referencia_espacial
-            )
+                # ==================================
+                # GEOLOCALIZACIÓN
+                # ==================================
 
-            if not ubicacion:
+                ubicacion = buscar_ubicacion(
+                    texto_crudo,
+                    referencia_espacial
+                )
+
+
+                if not ubicacion:
+
+                    actualizar_estado(
+                        conexion,
+                        id_reporte,
+                        "error"
+                    )
+
+
+                    conexion.execute(
+                        "RELEASE SAVEPOINT reporte_actual"
+                    )
+
+
+                    errores += 1
+
+                    operaciones_lote += 1
+
+
+                    logger.warning(
+                        "Reporte=%d | "
+                        "resultado="
+                        "error_geolocalizacion",
+                        id_reporte
+                    )
+
+
+                    print(
+                        "Resultado: "
+                        "no se pudo obtener "
+                        "ubicación."
+                    )
+
+
+                else:
+
+                    print(
+                        f"Ubicación: "
+                        f"{ubicacion['nombre']}"
+                    )
+
+                    print(
+                        f"Latitud: "
+                        f"{ubicacion['latitud']}"
+                    )
+
+                    print(
+                        f"Longitud: "
+                        f"{ubicacion['longitud']}"
+                    )
+
+                    print(
+                        f"Método: "
+                        f"{ubicacion['metodo']}"
+                    )
+
+                    print(
+                        f"Precisión geográfica: "
+                        f"{ubicacion['precision']}"
+                    )
+
+
+                    referencia_geografica = (
+                        ubicacion.get(
+                            "referencia"
+                        )
+                    )
+
+
+                    if not referencia_geografica:
+
+                        referencia_geografica = (
+                            referencia_espacial
+                            or
+                            ubicacion["nombre"]
+                        )
+
+
+                    insertar_indicio(
+                        conexion,
+                        id_reporte,
+                        texto_procesado,
+                        categoria,
+                        score,
+                        ubicacion["latitud"],
+                        ubicacion["longitud"],
+                        fecha_publicacion,
+                        referencia_geografica,
+                        ubicacion["metodo"],
+                        ubicacion["precision"]
+                    )
+
+
+                    actualizar_estado(
+                        conexion,
+                        id_reporte,
+                        "procesado"
+                    )
+
+
+                    conexion.execute(
+                        "RELEASE SAVEPOINT reporte_actual"
+                    )
+
+
+                    procesados += 1
+
+                    operaciones_lote += 1
+
+
+                    logger.info(
+                        "Reporte=%d | "
+                        "resultado=procesado | "
+                        "metodo_geo=%s | "
+                        "precision_geo=%s",
+                        id_reporte,
+                        ubicacion["metodo"],
+                        ubicacion["precision"]
+                    )
+
+
+                    print(
+                        "Resultado: "
+                        "procesado correctamente."
+                    )
+
+
+            # ==================================
+            # GUARDAR LOTE
+            # ==================================
+
+            if operaciones_lote >= tamano_lote:
+
+                conexion.commit()
+
+                logger.info(
+                    "Lote guardado | "
+                    "operaciones=%d",
+                    operaciones_lote
+                )
+
+                operaciones_lote = 0
+
+
+        except Exception as error:
+
+            try:
+
+                conexion.execute(
+                    "ROLLBACK TO SAVEPOINT "
+                    "reporte_actual"
+                )
+
+                conexion.execute(
+                    "RELEASE SAVEPOINT "
+                    "reporte_actual"
+                )
+
+            except sqlite3.Error:
+
+                pass
+
+
+            try:
 
                 actualizar_estado(
                     conexion,
@@ -263,120 +512,18 @@ def procesar_reportes():
                     "error"
                 )
 
-                conexion.commit()
+                operaciones_lote += 1
 
-                errores += 1
-                
-                logger.warning(
-                    "Reporte=%d | "
-                    "resultado=error_geolocalizacion",
-                    id_reporte
-                )
+            except sqlite3.Error:
 
-                print(
-                    "Resultado: no se pudo "
-                    "obtener ubicación."
-                )
+                conexion.rollback()
 
-                continue
+                operaciones_lote = 0
 
-            print(
-                f"Ubicación: "
-                f"{ubicacion['nombre']}"
-            )
-
-            print(
-                f"Latitud: "
-                f"{ubicacion['latitud']}"
-            )
-
-            print(
-                f"Longitud: "
-                f"{ubicacion['longitud']}"
-            )
-            
-            print(
-                f"Método: {ubicacion['metodo']}"
-            )
-
-            print(
-                f"Precisión geográfica: "
-                f"{ubicacion['precision']}"
-            )
-
-            # =================================================
-            # 4. INSERTAR INDICIO PROCESADO
-            # =================================================
-
-            referencia_geografica = ubicacion.get(
-                "referencia"
-            )
-
-            if not referencia_geografica:
-
-                referencia_geografica = (
-                    referencia_espacial
-                    or ubicacion["nombre"]
-                )
-
-
-            insertar_indicio(
-                conexion,
-                id_reporte,
-                texto_procesado,
-                categoria,
-                score,
-                ubicacion["latitud"],
-                ubicacion["longitud"],
-                fecha_publicacion,
-                referencia_geografica,
-                ubicacion["metodo"],
-                ubicacion["precision"]
-            )
-
-            # =================================================
-            # 5. MARCAR REPORTE COMO PROCESADO
-            # =================================================
-
-            actualizar_estado(
-                conexion,
-                id_reporte,
-                "procesado"
-            )
-
-            conexion.commit()
-
-            procesados += 1
-            
-            logger.info(
-                "Reporte=%d | "
-                "resultado=procesado | "
-                "metodo_geo=%s | "
-                "precision_geo=%s",
-                id_reporte,
-                ubicacion["metodo"],
-                ubicacion["precision"]
-            )
-
-            print(
-                "Resultado: procesado "
-                "correctamente."
-            )
-
-        except Exception as error:
-
-            conexion.rollback()
-
-            actualizar_estado(
-                conexion,
-                id_reporte,
-                "error"
-            )
-
-            conexion.commit()
 
             errores += 1
-            
+
+
             logger.exception(
                 "Reporte=%d | "
                 "resultado=error | "
@@ -385,39 +532,105 @@ def procesar_reportes():
                 error
             )
 
+
             print(
                 f"ERROR: {error}"
             )
 
+
+    # ==========================================
+    # GUARDAR ÚLTIMO LOTE
+    # ==========================================
+
+    if operaciones_lote > 0:
+
+        conexion.commit()
+
+        logger.info(
+            "Último lote guardado | "
+            "operaciones=%d",
+            operaciones_lote
+        )
+
+
+    tiempo_pipeline = (
+        time.perf_counter()
+        - inicio_pipeline
+    )
+
+
     conexion.close()
-    
+
+
+    # ==========================================
+    # RESUMEN
+    # ==========================================
+
+    print(
+        "\n"
+        + "=" * 65
+    )
+
+    print(
+        "RESUMEN DEL PROCESAMIENTO"
+    )
+
+    print(
+        f"Procesados: "
+        f"{procesados}"
+    )
+
+    print(
+        f"Ruido: "
+        f"{ruido}"
+    )
+
+    print(
+        f"Errores: "
+        f"{errores}"
+    )
+
+    print(
+        f"Tiempo carga modelo: "
+        f"{tiempo_modelo:.4f} s"
+    )
+
+    print(
+        f"Tiempo pipeline: "
+        f"{tiempo_pipeline:.4f} s"
+    )
+
+
+    if len(reportes) > 0:
+
+        velocidad = (
+            len(reportes)
+            / tiempo_pipeline
+        )
+
+        print(
+            f"Rendimiento: "
+            f"{velocidad:.2f} "
+            f"reportes/s"
+        )
+
+
+    print(
+        "=" * 65
+    )
+
+
     logger.info(
         "Fin del procesamiento | "
         "procesados=%d | "
         "ruido=%d | "
-        "errores=%d",
+        "errores=%d | "
+        "tiempo=%.4f",
         procesados,
         ruido,
-        errores
+        errores,
+        tiempo_pipeline
     )
-
-    print("\n" + "=" * 65)
-
-    print("RESUMEN DEL PROCESAMIENTO")
-
-    print(
-        f"Procesados: {procesados}"
-    )
-
-    print(
-        f"Ruido: {ruido}"
-    )
-
-    print(
-        f"Errores: {errores}"
-    )
-
-    print("=" * 65)
 
 
 if __name__ == "__main__":

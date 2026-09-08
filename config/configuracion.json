@@ -1,3 +1,4 @@
 {
-    "umbral_confianza": 0.30
+    "umbral_confianza": 0.30,
+    "tamaño_lote": 50
 }
