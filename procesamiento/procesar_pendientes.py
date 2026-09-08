@@ -1,6 +1,7 @@
 import json
 import sqlite3
 from pathlib import Path
+from configurar_logs import obtener_logger
 
 from clasificar import (
     cargar_modelos,
@@ -19,6 +20,8 @@ DB_PATH = (
 RUTA_CONFIGURACION = (
     BASE_DIR / "config" / "configuracion.json"
 )
+
+logger = obtener_logger()
 
 
 def cargar_configuracion():
@@ -119,6 +122,12 @@ def procesar_reportes():
     umbral = configuracion[
         "umbral_confianza"
     ]
+    
+    logger.info(
+        "Inicio del procesamiento | "
+        "umbral=%.2f",
+        umbral
+    )
 
     print(
         f"\nUmbral de confianza: "
@@ -138,6 +147,11 @@ def procesar_reportes():
 
     reportes = obtener_reportes_pendientes(
         conexion
+    )
+    
+    logger.info(
+        "Reportes pendientes=%d",
+        len(reportes)
     )
 
     print(
@@ -184,6 +198,13 @@ def procesar_reportes():
                 vectorizador,
                 modelo
             )
+            
+            logger.info(
+                "Reporte=%d | categoria=%s | score=%.4f",
+                id_reporte,
+                categoria,
+                score
+            )
 
             print(
                 f"Categoría: {categoria}"
@@ -212,6 +233,11 @@ def procesar_reportes():
                 conexion.commit()
 
                 ruido += 1
+                
+                logger.info(
+                    "Reporte=%d | resultado=ruido",
+                    id_reporte
+                )
 
                 print(
                     "Resultado: descartado "
@@ -240,6 +266,12 @@ def procesar_reportes():
                 conexion.commit()
 
                 errores += 1
+                
+                logger.warning(
+                    "Reporte=%d | "
+                    "resultado=error_geolocalizacion",
+                    id_reporte
+                )
 
                 print(
                     "Resultado: no se pudo "
@@ -315,6 +347,16 @@ def procesar_reportes():
             conexion.commit()
 
             procesados += 1
+            
+            logger.info(
+                "Reporte=%d | "
+                "resultado=procesado | "
+                "metodo_geo=%s | "
+                "precision_geo=%s",
+                id_reporte,
+                ubicacion["metodo"],
+                ubicacion["precision"]
+            )
 
             print(
                 "Resultado: procesado "
@@ -334,12 +376,30 @@ def procesar_reportes():
             conexion.commit()
 
             errores += 1
+            
+            logger.exception(
+                "Reporte=%d | "
+                "resultado=error | "
+                "detalle=%s",
+                id_reporte,
+                error
+            )
 
             print(
                 f"ERROR: {error}"
             )
 
     conexion.close()
+    
+    logger.info(
+        "Fin del procesamiento | "
+        "procesados=%d | "
+        "ruido=%d | "
+        "errores=%d",
+        procesados,
+        ruido,
+        errores
+    )
 
     print("\n" + "=" * 65)
 
