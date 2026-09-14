@@ -43,9 +43,11 @@ def obtener_indicios(
             score_clasificacion,
             latitud,
             longitud,
-            fecha_publicacion
+            fecha_publicacion,
+            referencia_geografica,
+            metodo_geolocalizacion,
+            precision_geografica
         FROM indicio_procesado
-        WHERE 1 = 1
     """
 
     parametros = []
@@ -114,6 +116,42 @@ def obtener_indicios(
     return indicios
 
 
+def formatear_precision(precision):
+
+    valores = {
+        "alta": "Alta",
+        "media": "Media",
+        "baja": "Baja"
+    }
+
+    return valores.get(
+        precision,
+        "No determinada"
+    )
+
+
+def formatear_metodo(metodo):
+
+    valores = {
+        "coordenadas_explicitas":
+            "Coordenadas explícitas",
+
+        "catalogo_local":
+            "Catálogo local",
+
+        "geocodificacion_nominatim":
+            "Geocodificación externa",
+
+        "cache_geocodificacion":
+            "Caché de geocodificación"
+    }
+
+    return valores.get(
+        metodo,
+        "No determinado"
+    )
+    
+
 def generar_mapa(indicios):
 
     # ==========================================
@@ -171,7 +209,36 @@ def generar_mapa(indicios):
         fecha = indicio[
             "fecha_publicacion"
         ]
+        
+        referencia = indicio[
+            "referencia_geografica"
+        ]
 
+        metodo = indicio[
+            "metodo_geolocalizacion"
+        ]
+
+        precision = indicio[
+            "precision_geografica"
+        ]
+
+
+        precision_texto = formatear_precision(
+            precision
+        )
+
+        metodo_texto = formatear_metodo(
+            metodo
+        )
+
+        descripcion_precision = {
+            "alta": "Ubicación obtenida mediante coordenadas explícitas.",
+            "media": "Ubicación aproximada basada en una referencia relativamente acotada.",
+            "baja": "Ubicación representativa de una referencia geográfica amplia."
+        }.get(
+            precision,
+            "Precisión no determinada."
+        )
 
         puntos_calor.append(
             [
@@ -194,13 +261,46 @@ def generar_mapa(indicios):
 
             fill_opacity=0.8,
 
-            popup=(
-                f"<b>Categoría:</b> "
-                f"{categoria}<br>"
-                f"<b>Confianza:</b> "
-                f"{score * 100:.2f}%<br>"
-                f"<b>Fecha:</b> "
-                f"{fecha}"
+            popup=folium.Popup(
+                html=(
+                    f"<div style='width: 260px;'>"
+
+                    f"<h4 style='margin-bottom: 10px;'>"
+                    f"Detalle del indicio"
+                    f"</h4>"
+
+                    f"<b>Categoría:</b> "
+                    f"{categoria.capitalize()}"
+                    f"<br><br>"
+
+                    f"<b>Confianza:</b> "
+                    f"{score * 100:.2f}%"
+                    f"<br><br>"
+
+                    f"<b>Referencia geográfica:</b><br>"
+                    f"{referencia or 'No disponible'}"
+                    f"<br><br>"
+
+                    f"<b>Precisión geográfica:</b> "
+                    f"{precision_texto}"
+                    f"<br><br>"
+                    
+                    f"<span style='font-size: 11px; color: #666;'>"
+                    f"{descripcion_precision}"
+                    f"</span>"
+                    f"<br><br>"
+
+                    f"<b>Método de ubicación:</b><br>"
+                    f"{metodo_texto}"
+                    f"<br><br>"
+
+                    f"<b>Fecha:</b><br>"
+                    f"{fecha}"
+
+                    f"</div>"
+                ),
+
+                max_width=300
             )
 
         ).add_to(mapa)
@@ -259,9 +359,6 @@ def generar_mapa(indicios):
                 """
             )
         ).add_to(mapa)
-
-    return mapa.get_root().render()
-
 
     return mapa.get_root().render()
 
