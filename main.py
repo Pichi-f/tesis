@@ -1,7 +1,11 @@
 import sqlite3
 from pathlib import Path
 
+import numpy as np
+
 import folium
+
+from scipy.stats import gaussian_kde
 
 from flask import (
     Flask,
@@ -11,7 +15,6 @@ from flask import (
 )
 
 from folium.plugins import HeatMap
-
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -48,6 +51,7 @@ def obtener_indicios(
             metodo_geolocalizacion,
             precision_geografica
         FROM indicio_procesado
+        WHERE 1 = 1
     """
 
     parametros = []
@@ -151,6 +155,150 @@ def formatear_metodo(metodo):
         "No determinado"
     )
     
+    
+def generar_densidad_kde(indicios):
+    
+    if len(indicios) < 3:
+        return []
+
+
+    latitudes = np.array([
+        indicio["latitud"]
+        for indicio in indicios
+    ])
+
+    longitudes = np.array([
+        indicio["longitud"]
+        for indicio in indicios
+    ])
+
+
+    # ==========================================
+    # CALCULAR KDE
+    # ==========================================
+
+    coordenadas = np.vstack([
+        longitudes,
+        latitudes
+    ])
+
+
+    try:
+
+        kde = gaussian_kde(
+            coordenadas
+        )
+
+    except np.linalg.LinAlgError:
+
+        return []
+
+
+    # ==========================================
+    # CREAR ÁREA DE EVALUACIÓN
+    # ==========================================
+
+    margen_lat = 0.02
+    margen_lon = 0.02
+
+
+    min_lat = latitudes.min() - margen_lat
+    max_lat = latitudes.max() + margen_lat
+
+    min_lon = longitudes.min() - margen_lon
+    max_lon = longitudes.max() + margen_lon
+
+
+    cantidad_celdas = 35
+
+
+    valores_lat = np.linspace(
+        min_lat,
+        max_lat,
+        cantidad_celdas
+    )
+
+    valores_lon = np.linspace(
+        min_lon,
+        max_lon,
+        cantidad_celdas
+    )
+
+
+    puntos_kde = []
+
+
+    # ==========================================
+    # EVALUAR DENSIDAD
+    # ==========================================
+
+    for latitud in valores_lat:
+
+        for longitud in valores_lon:
+
+            puntos_kde.append(
+                [
+                    longitud,
+                    latitud
+                ]
+            )
+
+
+    puntos_kde_array = np.array(
+        puntos_kde
+    ).T
+
+
+    densidades = kde(
+        puntos_kde_array
+    )
+
+
+    # ==========================================
+    # NORMALIZAR DENSIDAD
+    # ==========================================
+
+    densidad_maxima = densidades.max()
+
+
+    if densidad_maxima <= 0:
+
+        return []
+
+
+    densidades_normalizadas = (
+        densidades
+        / densidad_maxima
+    )
+
+
+    resultado = []
+
+
+    for punto, densidad in zip(
+        puntos_kde,
+        densidades_normalizadas
+    ):
+
+        # Eliminamos valores demasiado bajos
+        # para evitar pintar todo el mapa.
+
+        if densidad < 0.05:
+
+            continue
+
+
+        resultado.append(
+            [
+                punto[1],
+                punto[0],
+                float(densidad)
+            ]
+        )
+
+
+    return resultado
+    
 
 def generar_mapa(indicios):
 
@@ -186,6 +334,11 @@ def generar_mapa(indicios):
     
 
     puntos_calor = []
+    
+    capa_incidentes = folium.FeatureGroup(
+        name="Incidentes",
+        show=True
+    )
 
 
     for indicio in indicios:
@@ -303,21 +456,60 @@ def generar_mapa(indicios):
                 max_width=300
             )
 
-        ).add_to(mapa)
+        ).add_to(capa_incidentes)
+        
+    capa_incidentes.add_to(
+        mapa
+    )
 
 
     # ==========================================
-    # MAPA DE CALOR
+    # CAPA KDE
     # ==========================================
 
-    if puntos_calor:
+    puntos_kde = generar_densidad_kde(
+        indicios
+    )
+
+
+    if puntos_kde:
+
+        capa_kde = folium.FeatureGroup(
+            name="Densidad KDE",
+            show=True
+        )
+
 
         HeatMap(
-            puntos_calor,
-            radius=30,
+            puntos_kde,
+
+            radius=25,
+
             blur=20,
-            min_opacity=0.4
-        ).add_to(mapa)
+
+            min_opacity=0.2,
+
+            max_zoom=13
+
+        ).add_to(
+            capa_kde
+        )
+
+
+        capa_kde.add_to(
+            mapa
+        )
+
+
+    # ==========================================
+    # CONTROL DE CAPAS
+    # ==========================================
+
+    folium.LayerControl(
+        collapsed=False
+    ).add_to(
+        mapa
+    )
 
 
     # ==========================================
