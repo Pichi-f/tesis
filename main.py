@@ -707,11 +707,17 @@ def estadisticas():
 
     resumen = {
         "total": len(indicios),
+
         "robo": 0,
         "extorsion": 0,
         "agresion": 0,
-        "otro": 0
+        "otro": 0,
+
+        "precision_alta": 0,
+        "precision_media": 0,
+        "precision_baja": 0
     }
+
 
     for indicio in indicios:
 
@@ -719,11 +725,31 @@ def estadisticas():
             "categoria_delito"
         ]
 
+        precision = indicio[
+            "precision_geografica"
+        ]
+
+
         if categoria in resumen:
 
             resumen[categoria] += 1
 
-    return jsonify(resumen)
+
+        clave_precision = (
+            f"precision_{precision}"
+        )
+
+
+        if clave_precision in resumen:
+
+            resumen[
+                clave_precision
+            ] += 1
+
+
+    return jsonify(
+        resumen
+    )
 
 
 if __name__ == "__main__":

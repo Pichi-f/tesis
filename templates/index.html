@@ -162,6 +162,13 @@
             color: #666666;
             font-size: 11px;
         }
+
+        .titulo-estadistica {
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
     </style>
 
 </head>
@@ -209,6 +216,37 @@
                         <input type="checkbox" name="categoria" value="otro" checked>
                         Otro
                     </label>
+
+                    <hr>
+
+                    <div class="titulo-estadistica">
+                        Precisión geográfica
+                    </div>
+
+                    <div class="detalle-estadisticas">
+
+                        <p>
+                            Alta:
+                            <strong id="precision-alta">
+                                0
+                            </strong>
+                        </p>
+
+                        <p>
+                            Media:
+                            <strong id="precision-media">
+                                0
+                            </strong>
+                        </p>
+
+                        <p>
+                            Baja:
+                            <strong id="precision-baja">
+                                0
+                            </strong>
+                        </p>
+
+                    </div>
 
                 </div>
 
@@ -496,6 +534,18 @@
                 document.getElementById(
                     "cantidad-otro"
                 ).textContent = datos.otro;
+
+                document.getElementById(
+                    "precision-alta"
+                ).textContent = datos.precision_alta;
+
+                document.getElementById(
+                    "precision-media"
+                ).textContent = datos.precision_media;
+
+                document.getElementById(
+                    "precision-baja"
+                ).textContent = datos.precision_baja;
 
             } catch (error) {
 
