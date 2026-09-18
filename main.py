@@ -5,7 +5,10 @@ import numpy as np
 
 import folium
 
-from scipy.stats import gaussian_kde
+import json
+
+from pyproj import Transformer
+from sklearn.neighbors import KernelDensity
 
 from flask import (
     Flask,
@@ -22,8 +25,41 @@ DB_PATH = (
     BASE_DIR / "data" / "cifra_negra.db"
 )
 
+CONFIG_PATH = (
+    BASE_DIR / "config" / "configuracion.json"
+)
+
 
 app = Flask(__name__)
+
+# WGS84:
+# latitud / longitud utilizadas por GPS y Folium
+#
+# UTM zona 15N:
+# coordenadas métricas apropiadas para Guatemala
+
+wgs84_a_utm = Transformer.from_crs(
+    "EPSG:4326",
+    "EPSG:32615",
+    always_xy=True
+)
+
+utm_a_wgs84 = Transformer.from_crs(
+    "EPSG:32615",
+    "EPSG:4326",
+    always_xy=True
+)
+
+
+def cargar_configuracion():
+
+    with open(
+        CONFIG_PATH,
+        "r",
+        encoding="utf-8"
+    ) as archivo:
+
+        return json.load(archivo)
 
 
 def obtener_indicios(
@@ -157,106 +193,146 @@ def formatear_metodo(metodo):
     
     
 def generar_densidad_kde(indicios):
-    
-    if len(indicios) < 3:
+
+    # Con un único punto no existe una
+    # distribución espacial útil.
+    if len(indicios) < 2:
         return []
 
 
-    latitudes = np.array([
-        indicio["latitud"]
-        for indicio in indicios
-    ])
+    configuracion = cargar_configuracion()
 
-    longitudes = np.array([
-        indicio["longitud"]
-        for indicio in indicios
-    ])
+    bandwidth = configuracion.get(
+        "bandwidth_kde_metros",
+        1500
+    )
+
+    resolucion = configuracion.get(
+        "resolucion_kde",
+        45
+    )
 
 
     # ==========================================
-    # CALCULAR KDE
+    # CONVERTIR LAT/LON A COORDENADAS EN METROS
     # ==========================================
 
-    coordenadas = np.vstack([
-        longitudes,
-        latitudes
-    ])
+    coordenadas_metros = []
 
 
-    try:
+    for indicio in indicios:
 
-        kde = gaussian_kde(
-            coordenadas
+        longitud = indicio[
+            "longitud"
+        ]
+
+        latitud = indicio[
+            "latitud"
+        ]
+
+
+        x, y = wgs84_a_utm.transform(
+            longitud,
+            latitud
         )
 
-    except np.linalg.LinAlgError:
 
-        return []
-
-
-    # ==========================================
-    # CREAR ÁREA DE EVALUACIÓN
-    # ==========================================
-
-    margen_lat = 0.02
-    margen_lon = 0.02
+        coordenadas_metros.append(
+            [
+                x,
+                y
+            ]
+        )
 
 
-    min_lat = latitudes.min() - margen_lat
-    max_lat = latitudes.max() + margen_lat
-
-    min_lon = longitudes.min() - margen_lon
-    max_lon = longitudes.max() + margen_lon
-
-
-    cantidad_celdas = 35
-
-
-    valores_lat = np.linspace(
-        min_lat,
-        max_lat,
-        cantidad_celdas
-    )
-
-    valores_lon = np.linspace(
-        min_lon,
-        max_lon,
-        cantidad_celdas
+    coordenadas_metros = np.array(
+        coordenadas_metros
     )
 
 
-    puntos_kde = []
+    valores_x = coordenadas_metros[
+        :,
+        0
+    ]
+
+    valores_y = coordenadas_metros[
+        :,
+        1
+    ]
 
 
     # ==========================================
-    # EVALUAR DENSIDAD
+    # ENTRENAR KDE
     # ==========================================
 
-    for latitud in valores_lat:
-
-        for longitud in valores_lon:
-
-            puntos_kde.append(
-                [
-                    longitud,
-                    latitud
-                ]
-            )
+    kde = KernelDensity(
+        kernel="gaussian",
+        bandwidth=bandwidth
+    )
 
 
-    puntos_kde_array = np.array(
-        puntos_kde
-    ).T
-
-
-    densidades = kde(
-        puntos_kde_array
+    kde.fit(
+        coordenadas_metros
     )
 
 
     # ==========================================
-    # NORMALIZAR DENSIDAD
+    # CREAR CUADRÍCULA
     # ==========================================
+
+    # Evaluamos hasta 3 bandwidth alrededor
+    # de los incidentes extremos.
+
+    margen = bandwidth * 3
+
+
+    min_x = valores_x.min() - margen
+    max_x = valores_x.max() + margen
+
+    min_y = valores_y.min() - margen
+    max_y = valores_y.max() + margen
+
+
+    grid_x = np.linspace(
+        min_x,
+        max_x,
+        resolucion
+    )
+
+    grid_y = np.linspace(
+        min_y,
+        max_y,
+        resolucion
+    )
+
+
+    malla_x, malla_y = np.meshgrid(
+        grid_x,
+        grid_y
+    )
+
+
+    puntos_malla = np.column_stack(
+        [
+            malla_x.ravel(),
+            malla_y.ravel()
+        ]
+    )
+
+
+    # ==========================================
+    # CALCULAR DENSIDADES
+    # ==========================================
+
+    log_densidades = kde.score_samples(
+        puntos_malla
+    )
+
+
+    densidades = np.exp(
+        log_densidades
+    )
+
 
     densidad_maxima = densidades.max()
 
@@ -272,26 +348,42 @@ def generar_densidad_kde(indicios):
     )
 
 
+    # ==========================================
+    # REGRESAR A LATITUD / LONGITUD
+    # ==========================================
+
     resultado = []
 
 
     for punto, densidad in zip(
-        puntos_kde,
+        puntos_malla,
         densidades_normalizadas
     ):
 
-        # Eliminamos valores demasiado bajos
-        # para evitar pintar todo el mapa.
+        # Omitimos densidades prácticamente
+        # irrelevantes para no pintar
+        # todo el mapa.
 
         if densidad < 0.05:
-
             continue
+
+
+        x = punto[0]
+        y = punto[1]
+
+
+        longitud, latitud = (
+            utm_a_wgs84.transform(
+                x,
+                y
+            )
+        )
 
 
         resultado.append(
             [
-                punto[1],
-                punto[0],
+                latitud,
+                longitud,
                 float(densidad)
             ]
         )

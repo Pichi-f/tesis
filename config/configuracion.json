@@ -1,4 +1,6 @@
 {
     "umbral_confianza": 0.30,
-    "tamaño_lote": 50
+    "tamano_lote": 50,
+    "bandwidth_kde_metros": 1500,
+    "resolucion_kde": 45
 }
