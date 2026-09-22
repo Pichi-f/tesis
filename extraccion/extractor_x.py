@@ -11,6 +11,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from pathlib import Path
 
+import re
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 PERFIL_X = (
@@ -107,6 +109,22 @@ def detectar_bloqueo_login(
 
 
     return False
+
+
+def extraer_id_publicacion(url):
+
+    if not url:
+        return None
+
+    coincidencia = re.search(
+        r"/status/(\d+)",
+        url
+    )
+
+    if not coincidencia:
+        return None
+
+    return coincidencia.group(1)
 
 
 def extraer_publicacion(
@@ -216,7 +234,12 @@ def extraer_publicacion(
         return None
 
 
+    id_publicacion = extraer_id_publicacion(
+        url
+    )
+    
     return {
+        "id_publicacion_plataforma": id_publicacion,
         "plataforma": "X",
         "usuario_publico": usuario,
         "texto": texto,
