@@ -1,9 +1,66 @@
+import json
 import re
+import unicodedata
+from functools import lru_cache
+from pathlib import Path
+
 import spacy
 
 
 # cargar una sola vez el modelo de español
 nlp = spacy.load("es_core_news_sm")
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Palabras que anteceden a un nombre de lugar: "Calzada Roosevelt",
+# "colonia Linda Vista". Lo que siguen no es el nombre de una persona.
+PALABRAS_DE_LUGAR = {
+    "calle", "avenida", "av", "calzada", "bulevar", "boulevard", "blvd",
+    "colonia", "col", "residenciales", "residencial", "condominio", "aldea",
+    "barrio", "canton", "sector", "anillo", "periferico", "ruta", "carretera",
+    "km", "kilometro", "puente", "mercado", "parque", "plaza", "centro",
+    "hospital", "zona", "municipio", "lotificacion", "finca", "asentamiento",
+}
+
+
+def normalizar(texto):
+    texto = unicodedata.normalize("NFD", texto.lower())
+    return "".join(c for c in texto if unicodedata.category(c) != "Mn")
+
+
+def cargar_lugares():
+    """Nombres de lugar del catálogo y del área de estudio, que no se anonimizan."""
+    lugares = set()
+    with open(BASE_DIR / "config" / "ubicaciones.json", encoding="utf-8") as archivo:
+        for clave, datos in json.load(archivo).items():
+            lugares.add(normalizar(clave))
+            lugares.add(normalizar(datos.get("nombre", "").split(",")[0]))
+    with open(BASE_DIR / "config" / "area_estudio.json", encoding="utf-8") as archivo:
+        for valores in json.load(archivo).values():
+            if isinstance(valores, list):
+                lugares.update(normalizar(v) for v in valores)
+    return {lugar for lugar in lugares if lugar}
+
+
+LUGARES = cargar_lugares()
+
+
+@lru_cache(maxsize=8)
+def tramos_de_lugar(texto):
+    """Posiciones del texto ocupadas por un lugar conocido ("En Villa Nueva")."""
+    contenido = normalizar(texto)
+    return [
+        (m.start(), m.end())
+        for lugar in LUGARES
+        for m in re.finditer(rf"(?<!\w){re.escape(lugar)}(?!\w)", contenido)
+    ]
+
+
+def es_lugar(texto, inicio, fin):
+    if any(a < fin and inicio < b for a, b in tramos_de_lugar(texto)):
+        return True
+    anterior = re.findall(r"\w+", normalizar(texto[max(0, inicio - 25):inicio]))
+    return bool(anterior) and anterior[-1] in PALABRAS_DE_LUGAR
 
 
 def anonimizar_nombres(texto):
@@ -15,7 +72,7 @@ def anonimizar_nombres(texto):
     # nombres detectados por spaCy
     for entidad in documento.ents:
 
-        if entidad.label_ == "PER":
+        if entidad.label_ == "PER" and not es_lugar(texto, entidad.start_char, entidad.end_char):
             posiciones.append(
                 (
                     entidad.start_char,
@@ -68,7 +125,7 @@ def anonimizar_nombres(texto):
             "San José Pinula"
         )
 
-        if candidato in ubicaciones_protegidas:
+        if candidato in ubicaciones_protegidas or es_lugar(texto, inicio, fin):
             es_ubicacion = True
 
         if not es_ubicacion:

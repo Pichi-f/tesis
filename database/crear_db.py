@@ -110,10 +110,32 @@ def crear_base_datos():
             fecha_publicacion DATETIME
                 NOT NULL,
 
+            referencia_geografica TEXT,
+
+            metodo_geolocalizacion TEXT,
+
+            precision_geografica TEXT
+                CHECK(
+                    precision_geografica IN (
+                        'alta',
+                        'media',
+                        'baja'
+                    )
+                    OR precision_geografica IS NULL
+                ),
+
+            -- Zona y municipio para las estadísticas (RF-VIS-04)
+            sector TEXT,
+
             FOREIGN KEY (id_reporte)
                 REFERENCES reporte_crudo(id_reporte)
         )
     """)
+
+    # Bases creadas antes de RF-VIS-04 no tienen la columna sector.
+    columnas = [c[1] for c in cursor.execute("PRAGMA table_info(indicio_procesado)")]
+    if "sector" not in columnas:
+        cursor.execute("ALTER TABLE indicio_procesado ADD COLUMN sector TEXT")
 
     conexion.commit()
     conexion.close()

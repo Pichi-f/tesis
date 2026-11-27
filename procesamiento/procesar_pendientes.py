@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import sys
 import time
 from pathlib import Path
 from configurar_logs import obtener_logger
@@ -10,6 +11,10 @@ from clasificar import (
 )
 
 from geolocalizar import buscar_ubicacion
+
+# La consola de Windows (cp1252) no puede imprimir emojis de las
+# publicaciones; se reemplazan en lugar de abortar el lote.
+sys.stdout.reconfigure(errors="replace")
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -83,7 +88,8 @@ def insertar_indicio(
     fecha_publicacion,
     referencia_geografica,
     metodo_geolocalizacion,
-    precision_geografica
+    precision_geografica,
+    sector
 ):
 
     cursor = conexion.cursor()
@@ -99,9 +105,10 @@ def insertar_indicio(
             fecha_publicacion,
             referencia_geografica,
             metodo_geolocalizacion,
-            precision_geografica
+            precision_geografica,
+            sector
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         id_reporte,
         texto_procesado,
@@ -112,7 +119,8 @@ def insertar_indicio(
         fecha_publicacion,
         referencia_geografica,
         metodo_geolocalizacion,
-        precision_geografica
+        precision_geografica,
+        sector
     ))
 
 
@@ -430,7 +438,8 @@ def procesar_reportes():
                         fecha_publicacion,
                         referencia_geografica,
                         ubicacion["metodo"],
-                        ubicacion["precision"]
+                        ubicacion["precision"],
+                        ubicacion.get("sector")
                     )
 
 
@@ -458,7 +467,8 @@ def procesar_reportes():
                         "precision_geo=%s",
                         id_reporte,
                         ubicacion["metodo"],
-                        ubicacion["precision"]
+                        ubicacion["precision"],
+                        ubicacion.get("sector")
                     )
 
 

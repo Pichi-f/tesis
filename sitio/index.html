@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cifra Negra - Visualización Geoespacial</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Misma versión de leaflet.heat que usa Folium (copiada por exportar_sitio.py) -->
+    <script src="leaflet_heat.min.js"></script>
+
+    <!-- Estilos y panel tomados de templates/index.html por exportar_sitio.py -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+        }
+
+        .contenedor {
+            display: flex;
+            height: 100vh;
+        }
+
+        .panel {
+            width: 280px;
+            background-color: white;
+            padding: 24px;
+            border-right: 1px solid #dddddd;
+            overflow-y: auto;
+        }
+
+        .titulo {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        .subtitulo {
+            margin-top: 0;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .seccion {
+            margin-top: 28px;
+        }
+
+        .seccion h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .opcion {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .campo-fecha {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+        }
+
+        .boton {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #168aad;
+            color: white;
+            font-weight: bold;
+        }
+
+        .boton:hover {
+            background-color: #126d89;
+        }
+
+        .estadistica {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        .estadistica-numero {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .estadistica-texto {
+            color: #666666;
+            font-size: 13px;
+        }
+
+        .mapa {
+            flex: 1;
+            height: 100vh;
+        }
+
+        .mapa iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .detalle-estadisticas {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .detalle-estadisticas p {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .estadistica hr {
+            margin-top: 15px;
+            border: none;
+            border-top: 1px solid #dddddd;
+        }
+
+        .lista-sectores {
+            max-height: 260px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+
+        .fila-sector {
+            padding: 6px 0;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .fila-sector-encabezado {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .fila-sector-detalle {
+            margin-top: 2px;
+            color: #666666;
+            font-size: 11px;
+        }
+
+        .boton-secundario {
+            margin-top: 10px;
+            background-color: #6c757d;
+        }
+
+        .boton-secundario:hover {
+            background-color: #565e64;
+        }
+
+        .leyenda-calor {
+            margin-top: 10px;
+        }
+
+        .barra-calor {
+            height: 14px;
+            border-radius: 7px;
+
+            background: linear-gradient(to right,
+                    blue,
+                    cyan,
+                    lime,
+                    yellow,
+                    red);
+        }
+
+        .etiquetas-calor {
+            display: flex;
+            justify-content: space-between;
+
+            margin-top: 5px;
+
+            color: #666666;
+            font-size: 11px;
+        }
+
+        .titulo-estadistica {
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+    </style>
+
+    <style>
+        #mapa {
+            width: 100%;
+            height: 100%;
+        }
+
+        .marcador-zona div {
+            border-radius: 50%;
+            background: rgba(33, 37, 41, 0.85);
+            color: white;
+            border: 2px solid white;
+            text-align: center;
+            font: bold 12px Arial, sans-serif;
+        }
+
+        .nota-sitio {
+            margin-top: 24px;
+            color: #888888;
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <aside class="panel">
+
+            <h1 class="titulo">
+                Cifra Negra
+            </h1>
+
+            <p class="subtitulo">
+                Visor de incidentes
+            </p>
+
+
+            <form id="formulario-filtros">
+
+                <div class="seccion">
+
+                    <h3>
+                        Categorías
+                    </h3>
+
+                    <label class="opcion">
+                        <input type="checkbox" name="categoria" value="robo" checked>
+                        Robo
+                    </label>
+
+                    <label class="opcion">
+                        <input type="checkbox" name="categoria" value="extorsion" checked>
+                        Extorsión
+                    </label>
+
+                    <label class="opcion">
+                        <input type="checkbox" name="categoria" value="agresion" checked>
+                        Agresión
+                    </label>
+
+                    <label class="opcion">
+                        <input type="checkbox" name="categoria" value="otro" checked>
+                        Otro
+                    </label>
+
+                    <hr>
+
+                    <div class="titulo-estadistica">
+                        Precisión geográfica
+                    </div>
+
+                    <div class="detalle-estadisticas">
+
+                        <p>
+                            Alta:
+                            <strong id="precision-alta">
+                                0
+                            </strong>
+                        </p>
+
+                        <p>
+                            Media:
+                            <strong id="precision-media">
+                                0
+                            </strong>
+                        </p>
+
+                        <p>
+                            Baja:
+                            <strong id="precision-baja">
+                                0
+                            </strong>
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="seccion">
+
+                    <h3>
+                        Rango de fechas
+                    </h3>
+
+                    <label>
+                        Desde
+                    </label>
+
+                    <input class="campo-fecha" type="date" id="fecha-desde">
+
+                    <label>
+                        Hasta
+                    </label>
+
+                    <input class="campo-fecha" type="date" id="fecha-hasta">
+
+                    <button class="boton" type="submit">
+                        Aplicar filtros
+                    </button>
+
+                    <button class="boton boton-secundario" type="button" id="limpiar-filtros">
+                        Limpiar filtros
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div class="estadistica">
+
+                <div class="estadistica-numero" id="total-indicios">
+                    0
+                </div>
+
+                <div class="estadistica-texto">
+                    Indicios mostrados
+                </div>
+
+                <hr>
+
+                <div class="detalle-estadisticas">
+
+                    <p>
+                        Robo:
+                        <strong id="cantidad-robo">
+                            0
+                        </strong>
+                    </p>
+
+                    <p>
+                        Extorsión:
+                        <strong id="cantidad-extorsion">
+                            0
+                        </strong>
+                    </p>
+
+                    <p>
+                        Agresión:
+                        <strong id="cantidad-agresion">
+                            0
+                        </strong>
+                    </p>
+
+                    <p>
+                        Otro:
+                        <strong id="cantidad-otro">
+                            0
+                        </strong>
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="seccion">
+
+                <h3>
+                    Incidentes por zona
+                </h3>
+
+                <div class="lista-sectores" id="lista-sectores"></div>
+
+            </div>
+
+            <div class="seccion">
+
+                <h3>
+                    Intensidad de incidentes
+                </h3>
+
+                <div class="leyenda-calor">
+
+                    <div class="barra-calor"></div>
+
+                    <div class="etiquetas-calor">
+
+                        <span>
+                            Baja
+                        </span>
+
+                        <span>
+                            Media
+                        </span>
+
+                        <span>
+                            Alta
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+        <main class="mapa">
+            <div id="mapa"></div>
+        </main>
+
+    </div>
+
+    <script>
+        // Versión estática del visor (GitHub Pages). Reproduce en el navegador
+        // lo que main.py hace en el servidor: filtros por categoría y fecha,
+        // marcadores, resumen por zona (RF-VIS-04) y KDE gaussiano con el
+        // ancho de banda en metros. Los datos vienen de indicios.json, que
+        // genera visualizacion/exportar_sitio.py sin ningún texto de reportes.
+
+        const CATEGORIAS = {
+            robo: "Robo",
+            extorsion: "Extorsión",
+            agresion: "Agresión",
+            otro: "Otro"
+        };
+
+        const PRECISION = {
+            alta: ["Alta", "Ubicación obtenida mediante coordenadas explícitas."],
+            media: ["Media", "Ubicación aproximada basada en una referencia relativamente acotada."],
+            baja: ["Baja", "Ubicación representativa de una referencia geográfica amplia."]
+        };
+
+        const METODO = {
+            coordenadas_explicitas: "Coordenadas explícitas",
+            catalogo_local: "Catálogo local",
+            geocodificacion_nominatim: "Geocodificación externa",
+            cache_geocodificacion: "Caché de geocodificación"
+        };
+
+        let datos = { indicios: [], kde: { bandwidth_metros: 1500, resolucion: 45 } };
+
+        const mapa = L.map("mapa", { zoomControl: true }).setView([14.61, -90.55], 11);
+        L.control.scale().addTo(mapa);
+
+        const baseOsm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mapa);
+
+        const capaIncidentes = L.layerGroup().addTo(mapa);
+        const capaZonas = L.layerGroup().addTo(mapa);
+        const capaKde = L.heatLayer([], {
+            radius: 25,
+            blur: 20,
+            minOpacity: 0.2,
+            maxZoom: 13
+        });
+        // La capa de calor se agrega al mapa cuando ya tiene tamaño y datos
+        // (leaflet.heat falla si se dibuja sobre un lienzo de ancho cero).
+
+        L.control.layers(
+            { "openstreetmap": baseOsm },
+            {
+                "Incidentes": capaIncidentes,
+                "Resumen por zona": capaZonas,
+                "Densidad KDE": capaKde
+            },
+            { collapsed: false }
+        ).addTo(mapa);
+
+        function escapar(texto) {
+            const nodo = document.createElement("span");
+            nodo.textContent = texto == null ? "" : String(texto);
+            return nodo.innerHTML;
+        }
+
+        function filtrosActuales() {
+            const categorias = [...document.querySelectorAll('input[name="categoria"]:checked')]
+                .map(casilla => casilla.value);
+            return {
+                categorias,
+                desde: document.getElementById("fecha-desde").value,
+                hasta: document.getElementById("fecha-hasta").value
+            };
+        }
+
+        function filtrar(filtros) {
+            return datos.indicios.filter(indicio =>
+                filtros.categorias.includes(indicio.categoria)
+                && (!filtros.desde || indicio.dia >= filtros.desde)
+                && (!filtros.hasta || indicio.dia <= filtros.hasta)
+            );
+        }
+
+        // ---------- KDE gaussiano (equivalente a generar_densidad_kde) ----------
+
+        function densidadKde(indicios) {
+            if (indicios.length < 2) {
+                return [];
+            }
+
+            const h = datos.kde.bandwidth_metros;
+            const resolucion = datos.kde.resolucion;
+
+            // Proyección local en metros alrededor del centro de los puntos;
+            // en un área de ~30 km el error frente a UTM es despreciable.
+            const lat0 = indicios.reduce((s, i) => s + i.latitud, 0) / indicios.length;
+            const lon0 = indicios.reduce((s, i) => s + i.longitud, 0) / indicios.length;
+            const mLat = 110574;
+            const mLon = 111320 * Math.cos(lat0 * Math.PI / 180);
+
+            const puntos = indicios.map(i => [(i.longitud - lon0) * mLon, (i.latitud - lat0) * mLat]);
+            const xs = puntos.map(p => p[0]);
+            const ys = puntos.map(p => p[1]);
+            const margen = h * 3;
+            const minX = Math.min(...xs) - margen, maxX = Math.max(...xs) + margen;
+            const minY = Math.min(...ys) - margen, maxY = Math.max(...ys) + margen;
+
+            const malla = [];
+            let maximo = 0;
+
+            for (let fila = 0; fila < resolucion; fila++) {
+                const y = minY + (maxY - minY) * fila / (resolucion - 1);
+                for (let col = 0; col < resolucion; col++) {
+                    const x = minX + (maxX - minX) * col / (resolucion - 1);
+                    let densidad = 0;
+                    for (const [px, py] of puntos) {
+                        const d2 = (x - px) ** 2 + (y - py) ** 2;
+                        densidad += Math.exp(-d2 / (2 * h * h));
+                    }
+                    malla.push([x, y, densidad]);
+                    maximo = Math.max(maximo, densidad);
+                }
+            }
+
+            if (maximo <= 0) {
+                return [];
+            }
+
+            return malla
+                .map(([x, y, d]) => [lat0 + y / mLat, lon0 + x / mLon, d / maximo])
+                .filter(punto => punto[2] >= 0.05);
+        }
+
+        // ---------- Capas ----------
+
+        function dibujarIncidentes(indicios) {
+            capaIncidentes.clearLayers();
+            for (const indicio of indicios) {
+                const [precision, descripcion] = PRECISION[indicio.precision] || ["No determinada", "Precisión no determinada."];
+                const popup =
+                    `<div style="width: 260px;">` +
+                    `<h4 style="margin-bottom: 10px;">Detalle del indicio</h4>` +
+                    `<b>Categoría:</b> ${CATEGORIAS[indicio.categoria]}<br><br>` +
+                    `<b>Confianza:</b> ${(indicio.score * 100).toFixed(2)}%<br><br>` +
+                    `<b>Referencia geográfica:</b><br>${escapar(indicio.referencia) || "No disponible"}<br><br>` +
+                    `<b>Precisión geográfica:</b> ${precision}<br><br>` +
+                    `<span style="font-size: 11px; color: #666;">${descripcion}</span><br><br>` +
+                    `<b>Método de ubicación:</b><br>${METODO[indicio.metodo] || "No determinado"}<br><br>` +
+                    `<b>Fecha:</b><br>${escapar(indicio.fecha)}` +
+                    `</div>`;
+                L.circleMarker([indicio.latitud, indicio.longitud], {
+                    radius: 6,
+                    fill: true,
+                    fillOpacity: 0.8
+                }).bindPopup(popup, { maxWidth: 300 }).addTo(capaIncidentes);
+            }
+        }
+
+        function agruparPorSector(indicios) {
+            const sectores = new Map();
+            for (const indicio of indicios) {
+                const sector = indicio.sector || "Sin determinar";
+                if (!sectores.has(sector)) {
+                    sectores.set(sector, []);
+                }
+                sectores.get(sector).push(indicio);
+            }
+            return sectores;
+        }
+
+        function dibujarZonas(indicios) {
+            capaZonas.clearLayers();
+            for (const [sector, grupo] of agruparPorSector(indicios)) {
+                if (sector === "Sin determinar") {
+                    continue;
+                }
+                const latitud = grupo.reduce((s, i) => s + i.latitud, 0) / grupo.length;
+                const longitud = grupo.reduce((s, i) => s + i.longitud, 0) / grupo.length;
+                const conteos = Object.fromEntries(Object.keys(CATEGORIAS).map(c => [c, 0]));
+                grupo.forEach(i => conteos[i.categoria]++);
+                const predominante = Object.keys(conteos).reduce((a, b) => conteos[b] > conteos[a] ? b : a);
+                const dias = grupo.map(i => i.dia).sort();
+                const filas = Object.entries(conteos)
+                    .filter(([, n]) => n)
+                    .map(([c, n]) => `<tr><td>${CATEGORIAS[c]}</td><td style="text-align:right;"><b>${n}</b></td></tr>`)
+                    .join("");
+                const porcentaje = Math.round(grupo.length / indicios.length * 100);
+                const popup =
+                    `<div style="width: 230px; font-family: Arial, sans-serif;">` +
+                    `<h4 style="margin: 0 0 8px 0;">${escapar(sector)}</h4>` +
+                    `<b>${grupo.length}</b> indicios (${porcentaje}% de los mostrados)` +
+                    `<table style="width: 100%; margin: 8px 0; font-size: 13px;">${filas}</table>` +
+                    `<b>Predominante:</b> ${CATEGORIAS[predominante]}<br>` +
+                    `<b>Periodo:</b> ${dias[0]} a ${dias[dias.length - 1]}` +
+                    `</div>`;
+                const tamano = 22 + Math.min(grupo.length, 30);
+                L.marker([latitud, longitud], {
+                    icon: L.divIcon({
+                        className: "marcador-zona",
+                        iconSize: [tamano, tamano],
+                        iconAnchor: [tamano / 2, tamano / 2],
+                        html: `<div style="width:${tamano}px;height:${tamano}px;line-height:${tamano}px;">${grupo.length}</div>`
+                    })
+                })
+                    .bindTooltip(`${escapar(sector)}: ${grupo.length}`)
+                    .bindPopup(popup, { maxWidth: 260 })
+                    .addTo(capaZonas);
+            }
+        }
+
+        // ---------- Panel de estadísticas ----------
+
+        function texto(id, valor) {
+            document.getElementById(id).textContent = valor;
+        }
+
+        function mostrarEstadisticas(indicios) {
+            texto("total-indicios", indicios.length);
+            for (const categoria of Object.keys(CATEGORIAS)) {
+                texto(`cantidad-${categoria}`, indicios.filter(i => i.categoria === categoria).length);
+            }
+            for (const nivel of ["alta", "media", "baja"]) {
+                texto(`precision-${nivel}`, indicios.filter(i => i.precision === nivel).length);
+            }
+
+            const lista = document.getElementById("lista-sectores");
+            lista.replaceChildren();
+            const sectores = [...agruparPorSector(indicios)]
+                .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+
+            if (!sectores.length) {
+                lista.textContent = "Sin incidentes con estos filtros.";
+                return;
+            }
+
+            for (const [sector, grupo] of sectores) {
+                const fila = document.createElement("div");
+                fila.className = "fila-sector";
+                const encabezado = document.createElement("div");
+                encabezado.className = "fila-sector-encabezado";
+                const nombre = document.createElement("span");
+                nombre.textContent = sector;
+                const total = document.createElement("strong");
+                total.textContent = grupo.length;
+                encabezado.append(nombre, total);
+                const detalle = document.createElement("div");
+                detalle.className = "fila-sector-detalle";
+                detalle.textContent = Object.keys(CATEGORIAS)
+                    .map(c => [c, grupo.filter(i => i.categoria === c).length])
+                    .filter(([, n]) => n > 0)
+                    .map(([c, n]) => `${CATEGORIAS[c]} ${n}`)
+                    .join(" · ");
+                fila.append(encabezado, detalle);
+                lista.append(fila);
+            }
+        }
+
+        // ---------- Actualización ----------
+
+        function actualizar(ajustarVista) {
+            const indicios = filtrar(filtrosActuales());
+            dibujarIncidentes(indicios);
+            dibujarZonas(indicios);
+            capaKde.setLatLngs(densidadKde(indicios));
+            mostrarEstadisticas(indicios);
+
+            if (ajustarVista && indicios.length > 1) {
+                mapa.fitBounds(indicios.map(i => [i.latitud, i.longitud]), { padding: [40, 40] });
+            } else if (ajustarVista && indicios.length === 1) {
+                mapa.setView([indicios[0].latitud, indicios[0].longitud], 14);
+            }
+        }
+
+        document.getElementById("formulario-filtros").addEventListener("submit", evento => {
+            evento.preventDefault();
+            actualizar(true);
+        });
+
+        document.getElementById("limpiar-filtros").addEventListener("click", () => {
+            document.querySelectorAll('input[name="categoria"]').forEach(c => { c.checked = true; });
+            document.getElementById("fecha-desde").value = "";
+            document.getElementById("fecha-hasta").value = "";
+            actualizar(true);
+        });
+
+        fetch("indicios.json")
+            .then(respuesta => respuesta.json())
+            .then(json => {
+                datos = json;
+                const nota = document.createElement("p");
+                nota.className = "nota-sitio";
+                nota.textContent = `Datos actualizados al ${json.generado}. Sin texto de las publicaciones.`;
+                document.querySelector(".panel").append(nota);
+                mapa.invalidateSize();
+                actualizar(true);
+                capaKde.addTo(mapa);
+            })
+            .catch(error => console.error("No se pudieron cargar los indicios:", error));
+    </script>
+
+</body>
+
+</html>

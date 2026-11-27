@@ -2,30 +2,692 @@
     "zona 1": {
         "nombre": "Zona 1, Ciudad de Guatemala",
         "latitud": 14.6416142,
-        "longitud": -90.5132836
+        "longitud": -90.5132836,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
     },
-
     "mixco": {
         "nombre": "Mixco",
         "latitud": 14.63077,
-        "longitud": -90.60711
+        "longitud": -90.60711,
+        "tipo": "municipio",
+        "municipio": "mixco"
     },
-
     "villa nueva": {
         "nombre": "Villa Nueva",
         "latitud": 14.52512,
-        "longitud": -90.58544
+        "longitud": -90.58544,
+        "tipo": "municipio",
+        "municipio": "villa nueva"
     },
-
     "san miguel petapa": {
         "nombre": "San Miguel Petapa",
         "latitud": 14.4977,
-        "longitud": -90.5560
+        "longitud": -90.556,
+        "tipo": "municipio",
+        "municipio": "san miguel petapa"
     },
-
     "el trebol": {
         "nombre": "El Trébol",
         "latitud": 14.61636,
         "longitud": -90.53487
+    },
+    "ciudad de guatemala": {
+        "nombre": "Ciudad de Guatemala",
+        "latitud": 14.641614,
+        "longitud": -90.513284,
+        "tipo": "municipio",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 2": {
+        "nombre": "Zona 2, Ciudad de Guatemala",
+        "latitud": 14.661034,
+        "longitud": -90.508991,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 3": {
+        "nombre": "Zona 3, Ciudad de Guatemala",
+        "latitud": 14.631275,
+        "longitud": -90.526468,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 4": {
+        "nombre": "Zona 4, Ciudad de Guatemala",
+        "latitud": 14.619415,
+        "longitud": -90.516727,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 5": {
+        "nombre": "Zona 5, Ciudad de Guatemala",
+        "latitud": 14.62552,
+        "longitud": -90.499264,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 6": {
+        "nombre": "Zona 6, Ciudad de Guatemala",
+        "latitud": 14.662277,
+        "longitud": -90.489987,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 7": {
+        "nombre": "Zona 7, Ciudad de Guatemala",
+        "latitud": 14.628774,
+        "longitud": -90.548247,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 8": {
+        "nombre": "Zona 8, Ciudad de Guatemala",
+        "latitud": 14.617602,
+        "longitud": -90.526018,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 9": {
+        "nombre": "Zona 9, Ciudad de Guatemala",
+        "latitud": 14.607117,
+        "longitud": -90.520867,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 10": {
+        "nombre": "Zona 10, Ciudad de Guatemala",
+        "latitud": 14.602933,
+        "longitud": -90.510754,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 11": {
+        "nombre": "Zona 11, Ciudad de Guatemala",
+        "latitud": 14.610057,
+        "longitud": -90.551111,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 12": {
+        "nombre": "Zona 12, Ciudad de Guatemala",
+        "latitud": 14.577945,
+        "longitud": -90.55043,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 13": {
+        "nombre": "Zona 13, Ciudad de Guatemala",
+        "latitud": 14.571328,
+        "longitud": -90.529613,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 14": {
+        "nombre": "Zona 14, Ciudad de Guatemala",
+        "latitud": 14.583563,
+        "longitud": -90.513716,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 15": {
+        "nombre": "Zona 15, Ciudad de Guatemala",
+        "latitud": 14.591608,
+        "longitud": -90.492226,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 16": {
+        "nombre": "Zona 16, Ciudad de Guatemala",
+        "latitud": 14.610533,
+        "longitud": -90.472,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 17": {
+        "nombre": "Zona 17, Ciudad de Guatemala",
+        "latitud": 14.645335,
+        "longitud": -90.465398,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 18": {
+        "nombre": "Zona 18, Ciudad de Guatemala",
+        "latitud": 14.663312,
+        "longitud": -90.449022,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 19": {
+        "nombre": "Zona 19, Ciudad de Guatemala",
+        "latitud": 14.655638,
+        "longitud": -90.578651,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 21": {
+        "nombre": "Zona 21, Ciudad de Guatemala",
+        "latitud": 14.544502,
+        "longitud": -90.550517,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 24": {
+        "nombre": "Zona 24, Ciudad de Guatemala",
+        "latitud": 14.623633,
+        "longitud": -90.44816,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 25": {
+        "nombre": "Zona 25, Ciudad de Guatemala",
+        "latitud": 14.642488,
+        "longitud": -90.412676,
+        "tipo": "zona",
+        "municipio": "ciudad de guatemala"
+    },
+    "zona 1 mixco": {
+        "nombre": "Zona 1, Mixco",
+        "latitud": 14.63181,
+        "longitud": -90.609087,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 2 mixco": {
+        "nombre": "Zona 2, Mixco",
+        "latitud": 14.62994,
+        "longitud": -90.585218,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 3 mixco": {
+        "nombre": "Zona 3, Mixco",
+        "latitud": 14.638912,
+        "longitud": -90.576764,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 4 mixco": {
+        "nombre": "Zona 4, Mixco",
+        "latitud": 14.652382,
+        "longitud": -90.563759,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 5 mixco": {
+        "nombre": "Zona 5, Mixco",
+        "latitud": 14.66516,
+        "longitud": -90.571303,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 6 mixco": {
+        "nombre": "Zona 6, Mixco",
+        "latitud": 14.667893,
+        "longitud": -90.584001,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 7 mixco": {
+        "nombre": "Zona 7, Mixco",
+        "latitud": 14.646673,
+        "longitud": -90.599445,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 8 mixco": {
+        "nombre": "Zona 8, Mixco",
+        "latitud": 14.601247,
+        "longitud": -90.586302,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 9 mixco": {
+        "nombre": "Zona 9, Mixco",
+        "latitud": 14.594668,
+        "longitud": -90.613919,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 10 mixco": {
+        "nombre": "Zona 10, Mixco",
+        "latitud": 14.618619,
+        "longitud": -90.582022,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 11 mixco": {
+        "nombre": "Zona 11, Mixco",
+        "latitud": 14.675314,
+        "longitud": -90.540677,
+        "tipo": "zona",
+        "municipio": "mixco"
+    },
+    "zona 1 villa nueva": {
+        "nombre": "Zona 1, Villa Nueva",
+        "latitud": 14.525367,
+        "longitud": -90.58814,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 2 villa nueva": {
+        "nombre": "Zona 2, Villa Nueva",
+        "latitud": 14.548851,
+        "longitud": -90.599275,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 3 villa nueva": {
+        "nombre": "Zona 3, Villa Nueva",
+        "latitud": 14.532754,
+        "longitud": -90.634398,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 4 villa nueva": {
+        "nombre": "Zona 4, Villa Nueva",
+        "latitud": 14.503871,
+        "longitud": -90.588343,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 5 villa nueva": {
+        "nombre": "Zona 5, Villa Nueva",
+        "latitud": 14.521672,
+        "longitud": -90.565425,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 6 villa nueva": {
+        "nombre": "Zona 6, Villa Nueva",
+        "latitud": 14.536691,
+        "longitud": -90.576836,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 7 villa nueva": {
+        "nombre": "Zona 7, Villa Nueva",
+        "latitud": 14.552705,
+        "longitud": -90.57171,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 8 villa nueva": {
+        "nombre": "Zona 8, Villa Nueva",
+        "latitud": 14.568808,
+        "longitud": -90.603607,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 9 villa nueva": {
+        "nombre": "Zona 9, Villa Nueva",
+        "latitud": 14.530883,
+        "longitud": -90.596333,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 10 villa nueva": {
+        "nombre": "Zona 10, Villa Nueva",
+        "latitud": 14.501518,
+        "longitud": -90.614816,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 11 villa nueva": {
+        "nombre": "Zona 11, Villa Nueva",
+        "latitud": 14.56616,
+        "longitud": -90.575562,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 12 villa nueva": {
+        "nombre": "Zona 12, Villa Nueva",
+        "latitud": 14.559487,
+        "longitud": -90.563538,
+        "tipo": "zona",
+        "municipio": "villa nueva"
+    },
+    "zona 1 san miguel petapa": {
+        "nombre": "Zona 1, San Miguel Petapa",
+        "latitud": 14.500374,
+        "longitud": -90.559016,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 2 san miguel petapa": {
+        "nombre": "Zona 2, San Miguel Petapa",
+        "latitud": 14.498006,
+        "longitud": -90.560486,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 3 san miguel petapa": {
+        "nombre": "Zona 3, San Miguel Petapa",
+        "latitud": 14.495166,
+        "longitud": -90.551487,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 4 san miguel petapa": {
+        "nombre": "Zona 4, San Miguel Petapa",
+        "latitud": 14.485645,
+        "longitud": -90.541871,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 5 san miguel petapa": {
+        "nombre": "Zona 5, San Miguel Petapa",
+        "latitud": 14.497691,
+        "longitud": -90.556033,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 6 san miguel petapa": {
+        "nombre": "Zona 6, San Miguel Petapa",
+        "latitud": 14.5134,
+        "longitud": -90.538621,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 7 san miguel petapa": {
+        "nombre": "Zona 7, San Miguel Petapa",
+        "latitud": 14.527662,
+        "longitud": -90.546853,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 8 san miguel petapa": {
+        "nombre": "Zona 8, San Miguel Petapa",
+        "latitud": 14.504945,
+        "longitud": -90.553598,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 9 san miguel petapa": {
+        "nombre": "Zona 9, San Miguel Petapa",
+        "latitud": 14.505714,
+        "longitud": -90.563595,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "zona 10 san miguel petapa": {
+        "nombre": "Zona 10, San Miguel Petapa",
+        "latitud": 14.50017,
+        "longitud": -90.567182,
+        "tipo": "zona",
+        "municipio": "san miguel petapa"
+    },
+    "calzada roosevelt": {
+        "nombre": "Calzada Roosevelt",
+        "latitud": 14.617546,
+        "longitud": -90.541735,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "calzada san juan": {
+        "nombre": "Calzada San Juan",
+        "latitud": 14.623451,
+        "longitud": -90.548269,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "calzada aguilar batres": {
+        "nombre": "Calzada Raúl Aguilar Batres",
+        "latitud": 14.595745,
+        "longitud": -90.556284,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "aguilar batres": {
+        "nombre": "Calzada Raúl Aguilar Batres",
+        "latitud": 14.595745,
+        "longitud": -90.556284,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "calzada atanasio tzul": {
+        "nombre": "Calzada Atanasio Tzul",
+        "latitud": 14.623007,
+        "longitud": -90.519052,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "atanasio": {
+        "nombre": "Calzada Atanasio Tzul",
+        "latitud": 14.623007,
+        "longitud": -90.519052,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "avenida petapa": {
+        "nombre": "Avenida Petapa",
+        "latitud": 14.607569,
+        "longitud": -90.538056,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "avenida bolivar": {
+        "nombre": "Avenida Bolívar",
+        "latitud": 14.629897,
+        "longitud": -90.517504,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "avenida reforma": {
+        "nombre": "Avenida Reforma",
+        "latitud": 14.600271,
+        "longitud": -90.516784,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "avenida las americas": {
+        "nombre": "Avenida Las Américas",
+        "latitud": 14.582661,
+        "longitud": -90.521344,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "avenida hincapie": {
+        "nombre": "Avenida Hincapié",
+        "latitud": 14.59505,
+        "longitud": -90.521256,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "calle marti": {
+        "nombre": "Calle Martí",
+        "latitud": 14.651675,
+        "longitud": -90.509248,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "anillo periferico": {
+        "nombre": "Anillo Periférico",
+        "latitud": 14.639623,
+        "longitud": -90.549606,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "periferico": {
+        "nombre": "Anillo Periférico",
+        "latitud": 14.639623,
+        "longitud": -90.549606,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "sexta avenida": {
+        "nombre": "6a Avenida",
+        "latitud": 14.630787,
+        "longitud": -90.515542,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "parque central": {
+        "nombre": "Parque Central",
+        "latitud": 14.641807,
+        "longitud": -90.513291,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "centro historico": {
+        "nombre": "Centro Histórico",
+        "latitud": 14.638564,
+        "longitud": -90.51408,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "la bethania": {
+        "nombre": "Centro de Salud Colonia Bethania",
+        "latitud": 14.646478,
+        "longitud": -90.536284,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "el limon": {
+        "nombre": "Colonia El Limón",
+        "latitud": 14.663547,
+        "longitud": -90.464105,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "la reformita": {
+        "nombre": "La Reformita",
+        "latitud": 14.603648,
+        "longitud": -90.542011,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "paraiso 2": {
+        "nombre": "Colonia El Paraíso II",
+        "latitud": 14.653635,
+        "longitud": -90.442067,
+        "tipo": "lugar",
+        "municipio": "ciudad de guatemala"
+    },
+    "ciudad san cristobal": {
+        "nombre": "Ciudad San Cristóbal",
+        "latitud": 14.60334,
+        "longitud": -90.581598,
+        "tipo": "lugar",
+        "municipio": "mixco"
+    },
+    "el milagro": {
+        "nombre": "El Milagro",
+        "latitud": 14.680353,
+        "longitud": -90.568265,
+        "tipo": "lugar",
+        "municipio": "mixco"
+    },
+    "la brigada": {
+        "nombre": "La Brigada",
+        "latitud": 14.650275,
+        "longitud": -90.592379,
+        "tipo": "lugar",
+        "municipio": "mixco"
+    },
+    "lo de bran": {
+        "nombre": "Aldea Lo de Bran",
+        "latitud": 14.670456,
+        "longitud": -90.574783,
+        "tipo": "lugar",
+        "municipio": "mixco"
+    },
+    "lo de coy": {
+        "nombre": "Lo de Coy",
+        "latitud": 14.62118,
+        "longitud": -90.606776,
+        "tipo": "lugar",
+        "municipio": "mixco"
+    },
+    "montserrat": {
+        "nombre": "Banco Agromercantil Montserrat",
+        "latitud": 14.642146,
+        "longitud": -90.569436,
+        "tipo": "lugar",
+        "municipio": "mixco"
+    },
+    "el naranjo": {
+        "nombre": "Bulevar El Naranjo",
+        "latitud": 14.660829,
+        "longitud": -90.551949,
+        "tipo": "lugar",
+        "municipio": "mixco"
+    },
+    "barcena": {
+        "nombre": "Bárcena",
+        "latitud": 14.54455,
+        "longitud": -90.617309,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "barcenas": {
+        "nombre": "Bárcena",
+        "latitud": 14.54455,
+        "longitud": -90.617309,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "el frutal": {
+        "nombre": "El Frutal",
+        "latitud": 14.518387,
+        "longitud": -90.563939,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "mezquital": {
+        "nombre": "El Mezquital",
+        "latitud": 14.549038,
+        "longitud": -90.566449,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "ciudad del sol": {
+        "nombre": "Ciudad del Sol",
+        "latitud": 14.519272,
+        "longitud": -90.58701,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "linda vista": {
+        "nombre": "Linda Vista",
+        "latitud": 14.504959,
+        "longitud": -90.597988,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "santa isabel": {
+        "nombre": "Santa Isabel I y II",
+        "latitud": 14.522362,
+        "longitud": -90.603677,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "ciudad peronia": {
+        "nombre": "Ciudad Peronia",
+        "latitud": 14.573606,
+        "longitud": -90.602837,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "peronia": {
+        "nombre": "Ciudad Peronia",
+        "latitud": 14.573606,
+        "longitud": -90.602837,
+        "tipo": "lugar",
+        "municipio": "villa nueva"
+    },
+    "villa hermosa": {
+        "nombre": "Villa Hermosa",
+        "latitud": 14.521314,
+        "longitud": -90.545212,
+        "tipo": "lugar",
+        "municipio": "san miguel petapa"
+    },
+    "prados de villa hermosa": {
+        "nombre": "Prados de Villa Hermosa",
+        "latitud": 14.533781,
+        "longitud": -90.550438,
+        "tipo": "lugar",
+        "municipio": "san miguel petapa"
     }
 }

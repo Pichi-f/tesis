@@ -85,7 +85,8 @@ def obtener_indicios(
             fecha_publicacion,
             referencia_geografica,
             metodo_geolocalizacion,
-            precision_geografica
+            precision_geografica,
+            sector
         FROM indicio_procesado
         WHERE 1 = 1
     """
@@ -392,6 +393,96 @@ def generar_densidad_kde(indicios):
     return resultado
     
 
+NOMBRES_CATEGORIA = {
+    "robo": "Robo",
+    "extorsion": "Extorsión",
+    "agresion": "Agresión",
+    "otro": "Otro"
+}
+
+
+def agregar_resumen_por_zona(mapa, indicios):
+    """RF-VIS-04: un marcador por zona o municipio con estadísticas resumidas.
+
+    Se ubica en el centro de los indicios de ese sector y su ventana
+    emergente muestra solo conteos y fechas, nunca el texto de los
+    reportes, para mantener la anonimización.
+    """
+    sectores = {}
+
+    for indicio in indicios:
+
+        sector = indicio["sector"]
+
+        if not sector or sector == "Sin determinar":
+            continue
+
+        sectores.setdefault(sector, []).append(indicio)
+
+    if not sectores:
+        return
+
+    capa = folium.FeatureGroup(
+        name="Resumen por zona",
+        show=True
+    )
+
+    total_general = len(indicios)
+
+    for sector, grupo in sectores.items():
+
+        latitud = float(np.mean([i["latitud"] for i in grupo]))
+        longitud = float(np.mean([i["longitud"] for i in grupo]))
+
+        conteos = {clave: 0 for clave in NOMBRES_CATEGORIA}
+        for indicio in grupo:
+            if indicio["categoria_delito"] in conteos:
+                conteos[indicio["categoria_delito"]] += 1
+
+        predominante = max(conteos, key=conteos.get)
+        fechas = sorted(str(i["fecha_publicacion"])[:10] for i in grupo)
+
+        filas = "".join(
+            f"<tr><td>{NOMBRES_CATEGORIA[clave]}</td>"
+            f"<td style='text-align:right;'><b>{cantidad}</b></td></tr>"
+            for clave, cantidad in conteos.items()
+            if cantidad
+        )
+
+        popup = (
+            f"<div style='width: 230px; font-family: Arial, sans-serif;'>"
+            f"<h4 style='margin: 0 0 8px 0;'>{sector}</h4>"
+            f"<b>{len(grupo)}</b> indicios "
+            f"({len(grupo) / total_general:.0%} de los mostrados)"
+            f"<table style='width: 100%; margin: 8px 0; font-size: 13px;'>"
+            f"{filas}</table>"
+            f"<b>Predominante:</b> {NOMBRES_CATEGORIA[predominante]}<br>"
+            f"<b>Periodo:</b> {fechas[0]} a {fechas[-1]}"
+            f"</div>"
+        )
+
+        tamano = 22 + min(len(grupo), 30)
+
+        folium.Marker(
+            location=[latitud, longitud],
+            tooltip=f"{sector}: {len(grupo)}",
+            popup=folium.Popup(popup, max_width=260),
+            icon=folium.DivIcon(
+                icon_size=(tamano, tamano),
+                icon_anchor=(tamano // 2, tamano // 2),
+                html=(
+                    f"<div style='width: {tamano}px; height: {tamano}px; "
+                    f"line-height: {tamano}px; border-radius: 50%; "
+                    f"background: rgba(33, 37, 41, 0.85); color: white; "
+                    f"border: 2px solid white; text-align: center; "
+                    f"font: bold 12px Arial, sans-serif;'>{len(grupo)}</div>"
+                )
+            )
+        ).add_to(capa)
+
+    capa.add_to(mapa)
+
+
 def generar_mapa(indicios):
 
     # ==========================================
@@ -552,6 +643,11 @@ def generar_mapa(indicios):
         
     capa_incidentes.add_to(
         mapa
+    )
+
+    agregar_resumen_por_zona(
+        mapa,
+        indicios
     )
 
 
@@ -746,6 +842,35 @@ def estadisticas():
                 clave_precision
             ] += 1
 
+
+    # RF-VIS-04: incidentes por zona o municipio, de mayor a menor.
+    por_sector = {}
+
+    for indicio in indicios:
+
+        sector = indicio["sector"] or "Sin determinar"
+
+        fila = por_sector.setdefault(
+            sector,
+            {
+                "sector": sector,
+                "total": 0,
+                "robo": 0,
+                "extorsion": 0,
+                "agresion": 0,
+                "otro": 0
+            }
+        )
+
+        fila["total"] += 1
+
+        if indicio["categoria_delito"] in fila:
+            fila[indicio["categoria_delito"]] += 1
+
+    resumen["por_sector"] = sorted(
+        por_sector.values(),
+        key=lambda fila: (-fila["total"], fila["sector"])
+    )
 
     return jsonify(
         resumen
